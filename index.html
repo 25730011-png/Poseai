@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoseAi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="#home" class="logo">PoseAi</a>
+    <nav class="nav">
+      <a href="#measure">측정</a>
+      <a href="#history">기록</a>
+      <a href="#guide">교정 가이드</a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- ① 메인 -->
+    <section id="home" class="page">
+      <div class="hero">
+        <h1>웹캠으로 보는 나의 체형</h1>
+        <p>정면·측면 5초씩, 거북목·어깨·골반 상태를 수치로 확인해 보세요.</p>
+        <a href="#measure" class="btn btn-primary">측정 시작하기</a>
+      </div>
+
+      <div class="card-grid">
+        <a href="#measure" class="card">
+          <h3>체형 진단</h3>
+          <p>웹캠으로 3가지 항목 측정</p>
+        </a>
+        <a href="#history" class="card">
+          <h3>기록 보기</h3>
+          <p>날짜별 기록과 변화 그래프</p>
+        </a>
+        <a href="#guide" class="card">
+          <h3>교정 가이드</h3>
+          <p>맞춤 스트레칭과 FAQ</p>
+        </a>
+      </div>
+
+      <div class="notice">
+        영상과 사진은 저장하거나 전송하지 않고 내 브라우저 안에서만 처리해요.
+      </div>
+    </section>
+
+    <!-- ② 촬영·측정 (js/measure.js) -->
+    <section id="measure" class="page">
+      <div class="steps">
+        <span id="step-front" class="step active">1 정면</span>
+        <span id="step-side" class="step">2 측면</span>
+      </div>
+
+      <div class="camera-box">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+        <div id="countdown" class="countdown"></div>
+      </div>
+
+      <p id="status" class="status">카메라를 허용해 주세요</p>
+      <p id="guide-text" class="guide-text">정면을 바라보고 평소처럼 서 주세요</p>
+
+      <button id="start-btn" class="btn btn-primary">측정 시작</button>
+    </section>
+
+    <!-- ③ 체형 리포트 (js/report.js) -->
+    <section id="report" class="page">
+      <div class="score-box">
+        <p class="score-label">종합 점수</p>
+        <p id="total-score" class="score">--점</p>
+        <p id="score-diff" class="score-diff"></p>
+      </div>
+
+      <div id="result-list" class="result-list"></div>
+
+      <div class="btn-row">
+        <button id="save-btn" class="btn btn-primary">기록 저장</button>
+        <a href="#guide" class="btn btn-outline">교정 가이드</a>
+      </div>
+    </section>
+
+    <!-- ④ 기록·그래프 (js/history.js) -->
+    <section id="history" class="page">
+      <div class="filter-row">
+        <select id="sort-select">
+          <option value="date">날짜순</option>
+          <option value="score">점수순</option>
+        </select>
+        <div class="tabs">
+          <button class="tab active" data-key="neck">거북목</button>
+          <button class="tab" data-key="shoulder">어깨</button>
+          <button class="tab" data-key="pelvis">골반</button>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="chart"></canvas>
+      </div>
+
+      <ul id="record-list" class="record-list"></ul>
+    </section>
+
+    <!-- ⑤ 교정 가이드 (js/guide.js) -->
+    <section id="guide" class="page">
+      <h2>나에게 맞는 스트레칭</h2>
+      <div id="guide-list" class="card-grid"></div>
+
+      <h2>자세 코치에게 물어보기</h2>
+      <div id="chat-box" class="chat-box"></div>
+      <div id="faq-buttons" class="faq-buttons"></div>
+
+      <h2>주변 병원 찾기</h2>
+      <div class="filter-row">
+        <select id="region-select"><option>지역 선택</option></select>
+        <button id="hospital-btn" class="btn btn-outline">조회</button>
+      </div>
+      <ul id="hospital-list" class="record-list"></ul>
+    </section>
+
+  </main>
+
+  <footer class="footer">※ 의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가 상담을 권장해요.</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/guide.js"></script>
+  <script type="module" src="js/measure.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
