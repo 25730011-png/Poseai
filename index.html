@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -247,19 +247,9 @@
         <section class="stack-16">
           <div>
             <h1 class="page-title">나에게 맞는 스트레칭</h1>
-            <p class="muted-sm">최근 측정에서 주의 이상이 나온 항목만 보여 드려요.</p>
+            <p class="muted-sm" id="guide-desc">스트레칭을 불러오는 중이에요.</p>
           </div>
-          <div id="guide-list" class="grid-2">
-            <article class="card stretch-card">
-              <div class="stretch-img">동작 그림</div>
-              <div class="stack-8">
-                <i class="badge warn">거북목 · 주의</i>
-                <h3>턱 당기기</h3>
-                <p>등을 펴고 앉아 턱을 뒤로 당긴 채 5초 유지해요.</p>
-                <span class="muted-sm">10회 × 3세트</span>
-              </div>
-            </article>
-          </div>
+          <div id="guide-list" class="grid-2"></div>
         </section>
 
         <section class="stack-16">
@@ -286,8 +276,8 @@
             <p class="muted-sm">건강보험심사평가원 병원정보서비스 (공공데이터포털 오픈API)</p>
           </div>
           <div class="filter-row">
-            <label>지역<select id="region-select"><option>서울특별시</option></select></label>
-            <label>진료과목<select id="dept-select"><option>재활의학과</option><option>정형외과</option></select></label>
+            <label>지역<select id="region-select"><option>불러오는 중</option></select></label>
+            <label>진료과목<select id="dept-select"><option>불러오는 중</option></select></label>
             <button id="hospital-btn" class="btn btn-primary">조회</button>
           </div>
           <ul id="hospital-list" class="record-list"></ul>
@@ -340,6 +330,6 @@
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=5"></script>
+  <script type="module" src="js/app.js?v=8"></script>
 </body>
 </html>

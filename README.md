@@ -26,7 +26,7 @@ index.html 하나에 화면을 section으로 나눠 넣고, 주소 끝 #이름�
 - HTML, CSS, JavaScript
 - MediaPipe Pose (웹캠 자세 인식)
 - LocalStorage (기록 저장), Chart.js (변화 그래프)
-- 건강보험심사평가원 병원정보서비스 오픈API
+- 건강보험심사평가원 병원정보서비스 오픈API (인증키는 Cloudflare Workers 중계 서버에만 보관)
 - GitHub Pages 배포
 
 ## 폴더 구조
@@ -40,7 +40,8 @@ poseai/
 ├── data/           JSON 데이터
 │   ├── criteria.json   판단 기준표 (양호·주의·확인 권장)
 │   ├── guide.json      스트레칭
-│   └── faq.json        FAQ
+│   ├── faq.json        FAQ
+│   └── hospital-codes.json  병원 찾기 지역·진료과목 코드
 └── asset/          카드·상세에 쓸 이미지
 ```
 

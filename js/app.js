@@ -541,12 +541,157 @@ document.addEventListener('pagechange', e => {
    5. 교정 가이드 (#guide): FAQ 챗봇
    ===================================================================== */
 // ===== ⑤ 교정 가이드 (#guide) =====
-// 지금 된 것: FAQ 챗봇 (data/faq.json → 질문 버튼 → 답변 말풍선)
+// 된 것: 맞춤 스트레칭(data/guide.json), FAQ 챗봇(data/faq.json)
 // 할 일
-// 1. data/guide.json 불러와서 '주의' 이상 항목 스트레칭 카드 표시
+// 1. (이미지) guide.json의 image에 asset/ 그림 경로 넣기
 // 2. AI 자세 코치 (Gemini, 중계 서버 거쳐서 호출) - 선택
 // 3. 오픈API(건강보험심사평가원 병원정보서비스)로 지역별 병원 조회
 
+// ----- 맞춤 스트레칭 (data/guide.json) -----
+// 최근 측정에서 '주의' 이상 나온 항목의 스트레칭만 보여줌
+// 측정 기록이 없으면 전체를 보여줌
+(function () {
+  const listEl = document.getElementById('guide-list');
+  const descEl = document.getElementById('guide-desc');
+  let guides = null;
+
+  function cardHTML(g, level) {
+    const c = CRITERIA[g.key];
+    const badge = level ? `<i class="badge ${level.cls}">${c.name} · ${level.text}</i>` : `<i class="badge good">${c.name}</i>`;
+    const img = g.image ? `<img class="stretch-img" src="${g.image}" alt="${g.title} 동작">` : `<div class="stretch-img">동작 그림</div>`;
+    return `
+      <article class="card stretch-card">
+        ${img}
+        <div class="stack-8">
+          ${badge}
+          <h3>${g.title}</h3>
+          <p>${g.how}</p>
+          <span class="muted-sm">${g.count}${g.caution ? ' · ' + g.caution : ''}</span>
+          ${g.source ? `<span class="muted-sm">출처: ${g.source}</span>` : ''}
+        </div>
+      </article>`;
+  }
+
+  function render() {
+    if (!guides || !CRITERIA) return;
+    const latest = getLatest();
+
+    if (!latest) {
+      descEl.textContent = '아직 측정 결과가 없어서 전체 스트레칭을 보여 드려요. 측정하면 내 결과에 맞는 것만 골라 드려요.';
+      listEl.innerHTML = guides.map(g => cardHTML(g, null)).join('');
+      return;
+    }
+
+    // 주의 이상인 항목만
+    const levels = {};
+    Object.keys(CRITERIA).forEach(k => { levels[k] = getLevel(k, latest[k]); });
+    const need = guides.filter(g => levels[g.key].cls !== 'good');
+
+    if (need.length === 0) {
+      descEl.textContent = '최근 측정에서 모두 양호했어요. 지금 자세를 유지하는 데 도움이 되는 스트레칭이에요.';
+      listEl.innerHTML = guides.map(g => cardHTML(g, levels[g.key])).join('');
+    } else {
+      descEl.textContent = `최근 측정(${latest.date})에서 주의 이상이 나온 항목만 보여 드려요.`;
+      listEl.innerHTML = need.map(g => cardHTML(g, levels[g.key])).join('');
+    }
+  }
+
+  // 기준표(criteria.json)까지 불러온 다음 그리기
+  Promise.all([fetch('data/guide.json').then(res => res.json()), criteriaReady])
+    .then(([data]) => { guides = data; render(); })
+    .catch(() => { descEl.textContent = '스트레칭 데이터를 불러오지 못했어요.'; });
+
+  document.addEventListener('pagechange', e => {
+    if (e.detail === 'guide') render();
+  });
+})();
+
+// ----- 병원 찾기 (공공데이터포털 건강보험심사평가원 병원정보서비스) -----
+// 요청 주소 (공공데이터포털 활용신청 상세의 End Point)
+const HOSP_URL = 'https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList';
+// 공공데이터포털 인증키 (Decoding 키)
+// ※ 이 파일은 GitHub에 공개돼서 키도 보여요. 중계 서버를 쓰게 되면 여기 키는 지우기
+const API_KEY = 'bf491d13d08c86e8c2ee3c1079cc574e5ef83f36cb47563d8e3798672e0e1192';
+// 중계 서버(Cloudflare Workers) 주소. 넣으면 키 대신 중계 서버로 요청함
+const RELAY_URL = '';   // 예: 'https://poseai-relay.내아이디.workers.dev'
+
+(function () {
+  const regionEl = document.getElementById('region-select');
+  const deptEl = document.getElementById('dept-select');
+  const btn = document.getElementById('hospital-btn');
+  const listEl = document.getElementById('hospital-list');
+
+  // 지역·진료과목 코드는 data/hospital-codes.json
+  fetch('data/hospital-codes.json')
+    .then(res => res.json())
+    .then(codes => {
+      regionEl.innerHTML = codes.regions.map(r => `<option value="${r.code}">${r.name}</option>`).join('');
+      deptEl.innerHTML = codes.departments.map(d => `<option value="${d.code}">${d.name}</option>`).join('');
+    });
+
+  function message(text) {
+    listEl.innerHTML = `<li class="empty">${text}</li>`;
+  }
+
+  // 요청 주소 만들기: 중계 서버가 있으면 중계 서버로, 없으면 공공데이터 API로 바로
+  function requestUrl() {
+    const q = { sidoCd: regionEl.value, dgsbjtCd: deptEl.value };
+    if (RELAY_URL) return `${RELAY_URL}/hospitals?${new URLSearchParams(q)}`;
+    return `${HOSP_URL}?${new URLSearchParams({ ServiceKey: API_KEY, pageNo: '1', numOfRows: '10', _type: 'json', ...q })}`;
+  }
+
+  btn.addEventListener('click', async () => {
+    message('병원을 찾는 중이에요...');
+    btn.disabled = true;
+    try {
+      const res = await fetch(requestUrl());
+      const text = await res.text();
+
+      // 인증키 오류 등은 JSON이 아니라 XML로 오는 경우가 있음
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        const msg = (text.match(/<returnAuthMsg>(.*?)<\/returnAuthMsg>/) || text.match(/<resultMsg>(.*?)<\/resultMsg>/) || [])[1];
+        message(msg === 'SERVICE_KEY_IS_NOT_REGISTERED_ERROR'
+          ? '인증키가 아직 등록 중이에요. 몇 시간 뒤 다시 해 주세요.'
+          : `조회 실패: ${msg || '응답을 읽지 못했어요'}`);
+        return;
+      }
+      const header = data.response && data.response.header;
+      if (header && header.resultCode !== '00') {
+        message(`조회 실패: ${header.resultMsg}`);
+        return;
+      }
+      let items = data.response && data.response.body && data.response.body.items && data.response.body.items.item;
+      if (!items) { message('조건에 맞는 병원이 없어요.'); return; }
+      if (!Array.isArray(items)) items = [items];   // 1개면 배열이 아니라 객체로 옴
+
+      listEl.innerHTML = '';
+      items.forEach(h => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="stack-8" style="flex:1">
+            <b>${h.yadmNm || ''}</b>
+            <span class="muted">${h.addr || ''}</span>
+          </div>
+          <span class="muted">${h.clCdNm || ''}</span>
+          ${h.telno ? `<a href="tel:${h.telno}">${h.telno}</a>` : ''}`;
+        listEl.appendChild(li);
+      });
+    } catch (err) {
+      // 브라우저가 공공데이터 서버를 바로 부르는 걸 막으면(CORS) 여기로 옴 → 중계 서버 필요
+      console.error(err);
+      message(RELAY_URL
+        ? '병원 정보를 불러오지 못했어요. 잠시 후 다시 해 주세요.'
+        : '브라우저에서 바로 불러오는 게 막혔어요. 중계 서버(RELAY_URL)를 연결해야 해요.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+
+// ----- FAQ 챗봇 (data/faq.json) -----
 (function () {
   const chatBox = document.getElementById('chat-box');
   const faqButtons = document.getElementById('faq-buttons');
