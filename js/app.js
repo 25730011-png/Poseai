@@ -3,11 +3,9 @@
 // 순서: 1 공통(기준표·점수·기록 저장) → 2 측정 → 3 리포트 → 4 기록·그래프 → 5 교정 가이드 → 6 화면 전환
 // 데이터는 data/ 폴더의 JSON (criteria.json, guide.json, faq.json)
 
-import {
-  PoseLandmarker,
-  FilesetResolver,
-  DrawingUtils
-} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+// MediaPipe는 측정 화면에 들어갈 때만 불러옴 (못 불러와도 다른 화면은 정상 작동)
+const VISION_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+let PoseLandmarker = null, FilesetResolver = null, DrawingUtils = null;
 
 
 /* =====================================================================
@@ -194,6 +192,7 @@ function resetMeasure() {
 async function loadModel() {
   if (landmarker) return;
   statusEl.textContent = 'AI 모델 불러오는 중...';
+  ({ PoseLandmarker, FilesetResolver, DrawingUtils } = await import(VISION_URL));
   const vision = await FilesetResolver.forVisionTasks(WASM_URL);
   const options = delegate => ({
     baseOptions: { modelAssetPath: MODEL_URL, delegate },
@@ -229,7 +228,7 @@ async function startCamera() {
     console.error(err);
     statusEl.textContent = err.name === 'NotAllowedError'
       ? '카메라 권한을 허용해 주세요 (주소창 왼쪽 아이콘)'
-      : '카메라를 켤 수 없어요 (localhost 또는 https에서 열었는지 확인)';
+      : 'AI 모델이나 카메라를 불러오지 못했어요. 인터넷 연결과 주소(https)를 확인해 주세요';
   }
 }
 
