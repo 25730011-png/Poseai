@@ -22,4 +22,5 @@ function showPage() {
 }
 
 window.addEventListener('hashchange', showPage);
-window.addEventListener('DOMContentLoaded', showPage);
+// 판단 기준표(criteria.json)를 불러온 다음 첫 화면 보여주기
+window.addEventListener('DOMContentLoaded', () => criteriaReady.finally(showPage));

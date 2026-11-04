@@ -1,9 +1,8 @@
 // ===== ② 촬영·측정 (#measure) =====
-// 지금 단계: 웹캠 인식 테스트
-// - 웹캠 켜고 MediaPipe 좌표를 점·선으로 표시
-// - 어깨·골반·거북목 각도를 실시간으로 보여줌
-// - [측정 시작] 누르면 3초 카운트다운 → 5초 평균값 표시
-// 다음 단계: 정면 → 측면 흐름, saveLatest() 후 #report 이동
+// 1. 웹캠 켜고 MediaPipe 좌표를 점·선으로 표시, 실시간 각도 표시
+// 2. [정면 측정 시작] → 3초 카운트다운 → 5초 동안 어깨·골반 각도 평균
+// 3. [측면 측정 시작] → 3초 카운트다운 → 5초 동안 거북목 각도 평균
+// 4. 종합 점수 계산 → saveLatest() → #report 로 이동
 
 import {
   PoseLandmarker,
@@ -20,7 +19,8 @@ const P = {
   L_SHOULDER: 11, R_SHOULDER: 12,
   L_HIP: 23, R_HIP: 24
 };
-const MIN_VIS = 0.5; // 이보다 낮으면 신뢰도 낮은 좌표로 보고 제외
+const MIN_VIS = 0.5;      // 이보다 낮으면 신뢰도 낮은 좌표로 보고 제외
+const MIN_FRAMES = 30;    // 5초 동안 유효한 프레임이 이보다 적으면 다시 측정
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
@@ -29,6 +29,8 @@ const statusEl = document.getElementById('status');
 const guideEl = document.getElementById('guide-text');
 const countdownEl = document.getElementById('countdown');
 const startBtn = document.getElementById('start-btn');
+const stepFront = document.getElementById('step-front');
+const stepSide = document.getElementById('step-side');
 
 let landmarker = null;
 let drawer = null;
@@ -37,6 +39,8 @@ let running = false;
 let lastTime = -1;
 let current = null;      // 지금 프레임 각도
 let samples = null;      // 5초 측정 중일 때 모으는 값
+let phase = 'front';     // 'front' → 'side'
+let frontResult = null;  // 정면 측정 결과 { shoulder, pelvis }
 
 // ---------- 각도 계산 ----------
 // 좌표는 0~1 비율이라 화면 가로세로 비율을 곱해서 계산
@@ -84,7 +88,29 @@ function calcAngles(lm) {
   return result;
 }
 
-const fmt = v => (v === null ? '--' : v.toFixed(1) + '°');
+const fmt = v => (v === null || v === undefined ? '--°' : v.toFixed(1) + '°');
+
+// ---------- 화면 상태 ----------
+function setPhase(next) {
+  phase = next;
+  stepFront.classList.toggle('active', phase === 'front');
+  stepSide.classList.toggle('active', phase === 'side');
+  if (phase === 'front') {
+    startBtn.textContent = '정면 측정 시작';
+    guideEl.textContent = '정면을 바라보고 평소처럼 서 주세요. 머리부터 골반까지 보이게요.';
+  } else {
+    startBtn.textContent = '측면 측정 시작';
+    guideEl.textContent = '옆으로 돌아서 평소처럼 서 주세요. 귀와 어깨가 잘 보이게요.';
+  }
+}
+
+function resetMeasure() {
+  frontResult = null;
+  samples = null;
+  countdownEl.textContent = '';
+  startBtn.disabled = false;
+  setPhase('front');
+}
 
 // ---------- 모델·웹캠 ----------
 async function loadModel() {
@@ -124,7 +150,7 @@ async function startCamera() {
   } catch (err) {
     console.error(err);
     statusEl.textContent = err.name === 'NotAllowedError'
-      ? '카메라 권한을 허용해 주세요'
+      ? '카메라 권한을 허용해 주세요 (주소창 왼쪽 아이콘)'
       : '카메라를 켤 수 없어요 (localhost 또는 https에서 열었는지 확인)';
   }
 }
@@ -148,8 +174,8 @@ function loop() {
 
     const lm = res.landmarks[0];
     if (lm) {
-      drawer.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: '#f5b800', lineWidth: 3 });
-      drawer.drawLandmarks(lm, { color: '#1e2a6e', radius: 4 });
+      drawer.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: '#FFFFFF', lineWidth: 3 });
+      drawer.drawLandmarks(lm, { color: '#FFFFFF', fillColor: '#555555', radius: 4 });
 
       current = calcAngles(lm);
       if (samples) samples.push(current);
@@ -159,11 +185,7 @@ function loop() {
       document.getElementById('live-pelvis').textContent = fmt(current.pelvis);
       document.getElementById('live-neck').textContent = fmt(current.neck);
 
-      if (!samples) {
-        statusEl.textContent = '잘 인식되고 있어요';
-        guideEl.textContent =
-          `어깨 ${fmt(current.shoulder)} · 골반 ${fmt(current.pelvis)} · 거북목(측면) ${fmt(current.neck)}`;
-      }
+      if (!samples) statusEl.textContent = '잘 인식되고 있어요';
     } else {
       current = null;
       if (!samples) statusEl.textContent = '사람이 보이지 않아요. 카메라에서 조금 떨어져 주세요';
@@ -176,46 +198,77 @@ function loop() {
 // ---------- 5초 평균 측정 ----------
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
+// 값이 있는 프레임만 평균, 너무 적으면 null
 function average(list, key) {
   const vals = list.map(s => s[key]).filter(v => v !== null);
-  if (vals.length === 0) return null;
+  if (vals.length < MIN_FRAMES) return null;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
-async function measure() {
-  if (!running || samples) return;
+async function collect5s() {
   startBtn.disabled = true;
-
   for (let i = 3; i > 0; i--) {
     countdownEl.textContent = i;
     await wait(1000);
   }
   countdownEl.textContent = '';
-  statusEl.textContent = '측정 중... 움직이지 마세요';
-
+  statusEl.textContent = '측정 중... 5초 동안 움직이지 마세요';
   samples = [];
   await wait(5000);
   const list = samples;
   samples = null;
-
-  const avg = {
-    shoulder: average(list, 'shoulder'),
-    pelvis: average(list, 'pelvis'),
-    neck: average(list, 'neck')
-  };
-  console.log('5초 평균', avg, `(${list.length}프레임)`);
-
-  statusEl.textContent = `5초 평균 (${list.length}프레임)`;
-  guideEl.textContent =
-    `어깨 ${fmt(avg.shoulder)} · 골반 ${fmt(avg.pelvis)} · 거북목(측면) ${fmt(avg.neck)}`;
   startBtn.disabled = false;
+  return list;
 }
 
-startBtn.addEventListener('click', measure);
+const round1 = v => Math.round(v * 10) / 10;
+
+async function onStart() {
+  if (!running || samples) return;
+
+  if (phase === 'front') {
+    const list = await collect5s();
+    const shoulder = average(list, 'shoulder');
+    const pelvis = average(list, 'pelvis');
+    if (shoulder === null || pelvis === null) {
+      statusEl.textContent = '어깨나 골반이 잘 안 보였어요. 한 걸음 뒤로 가서 다시 해 주세요';
+      return;
+    }
+    frontResult = { shoulder: round1(shoulder), pelvis: round1(pelvis) };
+    statusEl.textContent = `정면 완료 · 어깨 ${fmt(shoulder)} · 골반 ${fmt(pelvis)}`;
+    setPhase('side');
+    return;
+  }
+
+  // 측면
+  const list = await collect5s();
+  const neck = average(list, 'neck');
+  if (neck === null) {
+    statusEl.textContent = '귀와 어깨가 잘 안 보였어요. 옆으로 서서 다시 해 주세요';
+    return;
+  }
+
+  const result = {
+    date: new Date().toISOString().slice(0, 10),
+    neck: round1(neck),
+    shoulder: frontResult.shoulder,
+    pelvis: frontResult.pelvis
+  };
+  result.score = getTotalScore(result);   // common.js
+  saveLatest(result);                      // common.js
+  statusEl.textContent = '측정 완료! 리포트로 이동해요';
+  location.hash = '#report';
+}
+
+startBtn.addEventListener('click', onStart);
 
 // ---------- 화면 전환 ----------
-// #measure 들어오면 켜고, 다른 화면 가면 끄기
+// #measure 들어오면 켜고 처음부터, 다른 화면 가면 끄기
 document.addEventListener('pagechange', e => {
-  if (e.detail === 'measure') startCamera();
-  else stopCamera();
+  if (e.detail === 'measure') {
+    resetMeasure();
+    startCamera();
+  } else {
+    stopCamera();
+  }
 });

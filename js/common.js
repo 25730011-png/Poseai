@@ -1,12 +1,20 @@
 // ===== 공통: 판단 기준표, 점수 계산, 기록 저장 =====
-// 모든 화면에서 같이 씀 (기준값은 사용자 테스트 후 조정)
+// 모든 화면에서 같이 씀
 
-// 판단 기준 (각도, 단위: 도)
-const CRITERIA = {
-  neck:     { name: '거북목',    good: 15, warn: 25, penalty: 2 },
-  shoulder: { name: '어깨 수평', good: 2,  warn: 5,  penalty: 8 },
-  pelvis:   { name: '골반 수평', good: 3,  warn: 6,  penalty: 6 }
-};
+// ----- 판단 기준표 -----
+// 기준값은 코드가 아니라 data/criteria.json에 따로 적어 둠
+// (사용자 테스트 후 기준 조정할 때 JSON만 고치면 됨)
+//   good: 이 각도 미만이면 양호
+//   warn: 이 각도 미만이면 주의, 이상이면 확인 권장
+//   penalty: 점수 계산할 때 1도당 깎는 점수
+let CRITERIA = null;
+
+const criteriaReady = fetch('data/criteria.json')
+  .then(res => res.json())
+  .then(data => { CRITERIA = data; })
+  .catch(err => {
+    console.error('criteria.json을 불러오지 못했어요. Live Server나 배포 주소로 열었는지 확인하세요.', err);
+  });
 
 // 단계 판단: 양호 / 주의 / 확인 권장
 function getLevel(key, angle) {

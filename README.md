@@ -36,7 +36,7 @@ index.html 하나에 5개 화면을 section으로 넣고, 주소 끝 #이름으�
 │   ├── app.js        화면 전환
 │   ├── common.js     판단 기준표, 점수 계산, 기록 저장
 │   └── measure.js / report.js / history.js / guide.js
-└── data/             교정 가이드·FAQ JSON
+└── data/             criteria.json(판단 기준표), guide.json(스트레칭), faq.json(FAQ)
 ```
 
 ## 팀원
@@ -45,3 +45,7 @@ index.html 하나에 5개 화면을 section으로 넣고, 주소 끝 #이름으�
 
 ## 배포
 https://25730011-png.github.io/poseai
+
+## 지금 버전
+- 와이어프레임(흑백) 버전으로 기능부터 개발 중
+- 디자인 입힐 때: `css/style-design.css` 내용을 `css/style.css`에 덮어쓰고, `index.html`의 웹폰트 주석 풀기
