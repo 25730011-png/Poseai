@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 
@@ -267,6 +267,16 @@
               </div>
               <p class="muted-sm">Gemini가 내 최근 측정 결과를 참고해서 답해요. 참고용이며 의학적 진단이 아니에요.</p>
             </form>
+            <!-- Gemini 키 설정: 키는 코드(GitHub)에 넣지 않고 이 브라우저에만 저장 -->
+            <div id="ai-key-row" class="ai-form" hidden>
+              <label for="ai-key"><b>Gemini API 키 입력</b></label>
+              <div class="ai-row">
+                <input id="ai-key" type="password" placeholder="발급받은 Gemini API 키" autocomplete="off">
+                <button id="ai-key-save" class="btn btn-outline" type="button">저장</button>
+              </div>
+              <p class="muted-sm">키는 이 브라우저에만 저장되고 GitHub에는 올라가지 않아요.</p>
+            </div>
+            <button id="ai-key-toggle" class="btn-text" type="button" style="align-self:flex-start">AI 키 설정</button>
           </div>
         </section>
 
@@ -330,6 +340,6 @@
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=8"></script>
+  <script type="module" src="js/app.js?v=10"></script>
 </body>
 </html>

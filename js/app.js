@@ -544,7 +544,7 @@ document.addEventListener('pagechange', e => {
 // 된 것: 맞춤 스트레칭(data/guide.json), FAQ 챗봇(data/faq.json)
 // 할 일
 // 1. (이미지) guide.json의 image에 asset/ 그림 경로 넣기
-// 2. AI 자세 코치 (Gemini, 중계 서버 거쳐서 호출) - 선택
+// 2. (완료) AI 자세 코치 Gemini 연결 - 키는 브라우저에만 저장, 중계 서버는 선택
 // 3. 오픈API(건강보험심사평가원 병원정보서비스)로 지역별 병원 조회
 
 // ----- 맞춤 스트레칭 (data/guide.json) -----
@@ -722,14 +722,102 @@ const RELAY_URL = '';   // 예: 'https://poseai-relay.내아이디.workers.dev'
       faqButtons.textContent = 'FAQ를 불러오지 못했어요. (Live Server나 배포 주소로 열었는지 확인)';
     });
 
-  // AI 자세 코치는 아직 연결 전
-  aiForm.addEventListener('submit', e => {
+  // ----- AI 자세 코치 (Gemini API) -----
+  // 키는 코드에 넣지 않고 사용자가 화면에서 한 번 입력 → 이 브라우저(LocalStorage)에만 저장
+  // (공개 GitHub에 키가 올라가면 다른 사람이 쓰거나 구글이 키를 막을 수 있어서)
+  // 나중에 중계 서버(AI_RELAY_URL)를 만들면 키 입력 없이 누구나 쓸 수 있음
+  const GEMINI_MODEL = 'gemini-2.5-flash';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const VERTEX_URL = `https://aiplatform.googleapis.com/v1/publishers/google/models/${GEMINI_MODEL}:generateContent`;
+  const AI_RELAY_URL = '';   // 예: 'https://poseai-relay.내아이디.workers.dev/ai'
+  const KEY_STORE = 'poseai_gemini_key';
+
+  const keyRow = document.getElementById('ai-key-row');
+  const keyInput = document.getElementById('ai-key');
+  document.getElementById('ai-key-toggle').addEventListener('click', () => { keyRow.hidden = !keyRow.hidden; });
+  document.getElementById('ai-key-save').addEventListener('click', () => {
+    const v = keyInput.value.trim();
+    if (!v) return;
+    localStorage.setItem(KEY_STORE, v);
+    keyInput.value = '';
+    keyRow.hidden = true;
+    addBubble('AI 키를 저장했어요. 이제 질문해 보세요.', 'bot');
+  });
+
+  // AI에게 주는 규칙 (진단처럼 말하지 않게)
+  const RULES = [
+    '너는 PoseAi의 자세 코치야. 한국어 해요체로 3~5문장 안으로 짧게 답해.',
+    '다루는 건 거북목, 어깨 수평, 골반 수평, 앉은 자세, 스트레칭, 생활 습관뿐이야. 다른 주제는 정중히 거절해.',
+    '의학적 진단, 병명 추정, 약, 치료법은 말하지 마. 측정값은 참고용이라고 말해.',
+    '통증, 저림, 두통이 있거나 오래가면 재활의학과·정형외과 같은 전문가 상담을 권해.',
+    '스트레칭은 무리하지 말고 아프면 멈추라고 알려 줘.'
+  ].join('\n');
+
+  // 최근 측정 결과를 문장으로
+  function measureContext() {
+    const latest = getLatest();
+    if (!latest || !CRITERIA) return '사용자는 아직 측정하지 않았어.';
+    const parts = Object.keys(CRITERIA).map(k => {
+      const v = latest[k];
+      const lv = getLevel(k, v).text;
+      const dir = k === 'neck' ? '' : (v > 0 ? ', 오른쪽 낮음' : v < 0 ? ', 왼쪽 낮음' : '');
+      return `${CRITERIA[k].name} ${Math.abs(v).toFixed(1)}°(${lv}${dir})`;
+    });
+    return `사용자의 최근 측정(${latest.date}): ${parts.join(', ')}, 종합 점수 ${latest.score}점.`;
+  }
+
+  async function askGemini(question) {
+    const body = {
+      systemInstruction: { parts: [{ text: RULES }] },
+      contents: [{ role: 'user', parts: [{ text: `${measureContext()}\n질문: ${question}` }] }],
+      generationConfig: { temperature: 0.6, maxOutputTokens: 800, thinkingConfig: { thinkingBudget: 0 } }
+    };
+    let res;
+    if (AI_RELAY_URL) {
+      res = await fetch(AI_RELAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    } else {
+      const key = localStorage.getItem(KEY_STORE);
+      if (!key) return null;
+      const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+      if (key.startsWith('AQ.')) {
+        // AQ.로 시작하는 키 = Google Cloud(Vertex AI) 키 → Vertex 주소로 먼저 보내고, 안 되면 기본 주소로
+        res = await fetch(`${VERTEX_URL}?key=${encodeURIComponent(key)}`, opts);
+        if (!res.ok) res = await fetch(GEMINI_URL, { ...opts, headers: { ...opts.headers, 'x-goog-api-key': key } });
+      } else {
+        res = await fetch(GEMINI_URL, { ...opts, headers: { ...opts.headers, 'x-goog-api-key': key } });
+      }
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || res.status);
+    const parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+    return parts ? parts.map(p => p.text).join('').trim() : '';
+  }
+
+  aiForm.addEventListener('submit', async e => {
     e.preventDefault();
     const input = document.getElementById('ai-q');
-    if (!input.value.trim()) return;
-    addBubble(input.value, 'user');
-    addBubble('AI 자세 코치는 준비 중이에요. 지금은 위의 질문 버튼을 눌러 보세요.', 'bot');
+    const q = input.value.trim();
+    if (!q) return;
+    addBubble(q, 'user');
     input.value = '';
+
+    const thinking = document.createElement('p');
+    thinking.className = 'bubble bot';
+    thinking.textContent = '생각 중이에요...';
+    chatBox.appendChild(thinking);
+
+    try {
+      const answer = await askGemini(q);
+      if (answer === null) {
+        thinking.textContent = 'AI 키가 아직 없어요. 아래 "AI 키 설정"에서 키를 넣어 주세요. 그동안은 위의 질문 버튼을 눌러 보세요.';
+        keyRow.hidden = false;
+      } else {
+        thinking.textContent = answer || '답을 만들지 못했어요. 질문을 조금 바꿔서 다시 해 주세요.';
+      }
+    } catch (err) {
+      console.error(err);
+      thinking.textContent = `AI 답변을 불러오지 못했어요. (${err.message}) 키가 맞는지 확인하거나 위의 질문 버튼을 이용해 주세요.`;
+    }
   });
 })();
 
