@@ -567,7 +567,7 @@ document.addEventListener('pagechange', e => {
           <h3>${g.title}</h3>
           <p>${g.how}</p>
           <span class="muted-sm">${g.count}${g.caution ? ' · ' + g.caution : ''}</span>
-          ${g.source ? `<span class="muted-sm">출처: ${g.source}</span>` : ''}
+          ${g.source ? `<span class="muted-sm">출처: ${g.sourceUrl ? `<a href="${g.sourceUrl}" target="_blank" rel="noopener">${g.source}</a>` : g.source}</span>` : ''}
         </div>
       </article>`;
   }
@@ -741,16 +741,71 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
     return `사용자의 최근 측정(${latest.date}): ${parts.join(', ')}, 종합 점수 ${latest.score}점.`;
   }
 
+  // AI 모델 목록 (worker.js의 MODELS와 id가 같아야 함)
+  const AI_MODELS = [
+    { group: 'Google Gemini' },
+    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite', desc: '가장 빨라요' },
+    { id: 'gemini-2.5-flash',      name: 'Gemini 2.5 Flash',      desc: '속도와 답변 품질 중간' },
+    { id: 'gemini-2.5-pro',        name: 'Gemini 2.5 Pro',        desc: '가장 꼼꼼하지만 느려요' },
+    { group: 'OpenAI ChatGPT' },
+    { id: 'gpt-4o-mini',           name: 'GPT-4o mini',           desc: '빠르고 가벼워요' },
+    { id: 'gpt-4.1-mini',          name: 'GPT-4.1 mini',          desc: '속도와 답변 품질 중간' }
+  ];
+  const MODEL_STORE = 'poseai_ai_model';
+  const modelBtn = document.getElementById('model-btn');
+  const modelMenu = document.getElementById('model-menu');
+  const modelName = document.getElementById('model-name');
+  const findModel = id => AI_MODELS.find(m => m.id === id);
+  let currentModel = findModel(localStorage.getItem(MODEL_STORE)) ? localStorage.getItem(MODEL_STORE) : 'gemini-2.5-flash';
+
+  function renderModelMenu() {
+    modelName.textContent = findModel(currentModel).name;
+    modelMenu.innerHTML = '';
+    AI_MODELS.forEach(m => {
+      const li = document.createElement('li');
+      if (m.group) {
+        li.className = 'group';
+        li.textContent = m.group;
+      } else {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('role', 'option');
+        b.setAttribute('aria-selected', m.id === currentModel);
+        b.innerHTML = `<span><span class="m-name">${m.name}</span><span class="m-desc">${m.desc}</span></span><span class="check">✓</span>`;
+        b.addEventListener('click', () => {
+          currentModel = m.id;
+          localStorage.setItem(MODEL_STORE, m.id);
+          closeModelMenu();
+          renderModelMenu();
+        });
+        li.appendChild(b);
+      }
+      modelMenu.appendChild(li);
+    });
+  }
+  function closeModelMenu() {
+    modelMenu.hidden = true;
+    modelBtn.setAttribute('aria-expanded', 'false');
+  }
+  modelBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    modelMenu.hidden = !modelMenu.hidden;
+    modelBtn.setAttribute('aria-expanded', String(!modelMenu.hidden));
+  });
+  document.addEventListener('click', e => { if (!modelMenu.contains(e.target)) closeModelMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModelMenu(); });
+  renderModelMenu();
+
   async function askAI(question) {
     if (!AI_RELAY_URL) return null;
     const res = await fetch(AI_RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, context: measureContext() })
+      body: JSON.stringify({ question, context: measureContext(), model: currentModel })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || res.status);
-    return data.answer || '';
+    return data;   // { answer, model }
   }
 
   aiForm.addEventListener('submit', async e => {
@@ -763,20 +818,28 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
 
     const thinking = document.createElement('p');
     thinking.className = 'bubble bot';
-    thinking.textContent = '생각 중이에요...';
+    thinking.textContent = `${findModel(currentModel).name}이(가) 생각 중이에요...`;
     chatBox.appendChild(thinking);
     chatBox.scrollTop = chatBox.scrollHeight;
 
+    const t0 = performance.now();
     try {
-      const answer = await askAI(q);
-      if (answer === null) {
+      const data = await askAI(q);
+      if (data === null) {
         thinking.textContent = 'AI 코치는 준비 중이에요. 그동안은 위의 질문 버튼을 눌러 보세요.';
       } else {
-        thinking.textContent = answer || '답을 만들지 못했어요. 질문을 조금 바꿔서 다시 해 주세요.';
+        thinking.textContent = data.answer || '답을 만들지 못했어요. 질문을 조금 바꿔서 다시 해 주세요.';
+        // 답변 아래 작게: 어떤 AI가 몇 초 걸렸는지
+        const used = findModel(data.model);
+        const meta = document.createElement('span');
+        meta.className = 'ans-meta';
+        meta.textContent = `${used ? used.name : data.model} · ${((performance.now() - t0) / 1000).toFixed(1)}초`
+          + (data.model !== currentModel ? ' (선택한 모델이 응답하지 않아 대신 답했어요)' : '');
+        thinking.appendChild(meta);
       }
     } catch (err) {
       console.error(err);
-      thinking.textContent = '지금은 AI 답변을 불러오지 못했어요. 잠시 후 다시 해 보거나 위의 질문 버튼을 이용해 주세요.';
+      thinking.textContent = '지금은 AI 답변을 불러오지 못했어요. 다른 모델을 골라 보거나 위의 질문 버튼을 이용해 주세요.';
     }
     chatBox.scrollTop = chatBox.scrollHeight;
   });
@@ -791,7 +854,7 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
 // 화면이 바뀌면 'pagechange' 이벤트를 보내서 각 화면 JS가 필요할 때 실행되게 함
 //   예) document.addEventListener('pagechange', e => { if (e.detail === 'report') { ... } });
 
-const PAGES = ['home', 'measure', 'report', 'history', 'guide', 'login', 'signup'];
+const PAGES = ['home', 'measure', 'report', 'history', 'guide', 'faq', 'login', 'signup'];
 
 function showPage() {
   const id = location.hash.replace('#', '');
@@ -800,7 +863,7 @@ function showPage() {
   document.querySelectorAll('.page').forEach(sec => {
     sec.classList.toggle('active', sec.dataset.page === page);
   });
-  document.querySelectorAll('.nav a').forEach(a => {
+  document.querySelectorAll('.nav a, .sidebar-nav a:not([data-scroll])').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === '#' + page);
   });
 
@@ -812,3 +875,50 @@ function showPage() {
 window.addEventListener('hashchange', showPage);
 // 판단 기준표(criteria.json)를 불러온 다음 첫 화면 보여주기
 window.addEventListener('DOMContentLoaded', () => criteriaReady.finally(showPage));
+
+
+/* =====================================================================
+   7. 사이드바 + 로그인 안내
+   ===================================================================== */
+(() => {
+  const sidebar = document.getElementById('sidebar');
+  const dim = document.getElementById('sidebar-dim');
+  const btn = document.getElementById('menu-btn');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    sidebar.setAttribute('aria-hidden', 'false');
+    dim.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('no-scroll');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebar.setAttribute('aria-hidden', 'true');
+    dim.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('no-scroll');
+  }
+  btn.addEventListener('click', openSidebar);
+  dim.addEventListener('click', closeSidebar);
+  document.getElementById('sidebar-close').addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+  // 메뉴 누르면 닫기 (병원 찾기는 가이드 화면으로 간 뒤 그 위치로 스크롤)
+  sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    closeSidebar();
+    if (a.dataset.scroll) {
+      setTimeout(() => document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: 'smooth' }), 150);
+    }
+  }));
+
+  // 로그인 기능은 아직 준비 중 → 누르면 안내만
+  ['login-form', 'signup-form'].forEach(id => {
+    const form = document.getElementById(id);
+    if (!form) return;
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      form.querySelector('.form-msg').textContent = '로그인 기능은 준비 중이에요. 지금은 로그인 없이 측정과 기록 저장을 쓸 수 있어요.';
+    });
+  });
+})();

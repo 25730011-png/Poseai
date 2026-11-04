@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
 
@@ -15,13 +15,16 @@
   <div class="topbar">
     <div class="inner">
       <a href="#home">이용 안내</a>
-      <a href="#guide">자주 묻는 질문</a>
+      <a href="#faq">FAQ</a>
     </div>
   </div>
 
   <!-- 헤더 -->
   <header class="header">
     <div class="inner">
+      <button id="menu-btn" class="menu-btn" type="button" aria-label="전체 메뉴 열기" aria-controls="sidebar" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
       <a href="#home" class="logo" aria-label="PoseAi 홈">
         <img src="asset/logo.svg" alt="" width="36" height="36">
         <span>Pose<em>Ai</em></span>
@@ -30,6 +33,7 @@
         <a href="#measure">측정하기</a>
         <a href="#history">내 기록</a>
         <a href="#guide">교정 가이드</a>
+        <a href="#faq">FAQ</a>
       </nav>
       <div class="header-actions">
         <a href="#login" class="btn-text" id="login-link">로그인</a>
@@ -37,6 +41,36 @@
       </div>
     </div>
   </header>
+
+  <!-- 사이드바 (☰ 누르면 왼쪽에서 열림) -->
+  <div id="sidebar-dim" class="sidebar-dim" hidden></div>
+  <aside id="sidebar" class="sidebar" aria-label="전체 메뉴" aria-hidden="true">
+    <div class="sidebar-head">
+      <a href="#home" class="logo" aria-label="PoseAi 홈">
+        <img src="asset/logo.svg" alt="" width="32" height="32">
+        <span>Pose<em>Ai</em></span>
+      </a>
+      <button id="sidebar-close" class="sidebar-close" type="button" aria-label="메뉴 닫기">✕</button>
+    </div>
+    <div class="sidebar-user">
+      <span class="avatar" aria-hidden="true">?</span>
+      <div><b>로그인이 필요해요</b><span class="muted-sm">지금은 게스트로 이용 중이에요</span></div>
+    </div>
+    <a href="#login" class="btn btn-primary btn-block">로그인 / 회원가입</a>
+    <nav class="sidebar-nav" aria-label="사이드 메뉴">
+      <p class="sidebar-group">측정</p>
+      <a href="#home">홈</a>
+      <a href="#measure">체형 측정하기</a>
+      <a href="#report">체형 리포트</a>
+      <a href="#history">기록·그래프</a>
+      <p class="sidebar-group">관리</p>
+      <a href="#guide">맞춤 스트레칭</a>
+      <a href="#guide" data-scroll="hospital">병원 찾기</a>
+      <p class="sidebar-group">도움</p>
+      <a href="#faq">FAQ · AI 자세 코치</a>
+    </nav>
+    <p class="sidebar-foot muted-sm">의학적 진단이 아닌 참고용 분석이에요.</p>
+  </aside>
 
   <main>
 
@@ -57,12 +91,16 @@
               <li>영상 저장 안 함</li>
             </ul>
           </div>
-          <div class="preview-card" aria-label="체형 리포트 미리보기">
-            <div class="row-between"><span class="muted-sm">체형 리포트 미리보기</span><span class="muted-sm">예시</span></div>
-            <div class="preview-score"><strong>82</strong><span>점</span><em>지난번보다 +4</em></div>
-            <div class="preview-row"><span>거북목</span><span><b>18.4°</b><i class="badge warn">주의</i></span></div>
-            <div class="preview-row"><span>어깨 수평</span><span><b>2.7°</b><i class="badge warn">주의</i></span></div>
-            <div class="preview-row"><span>골반 수평</span><span><b>1.9°</b><i class="badge good">양호</i></span></div>
+          <div class="preview-card locked" aria-label="체형 리포트 미리보기">
+            <div class="row-between"><span class="muted-sm">내 체형 리포트</span><span class="chip-lock">로그인 필요</span></div>
+            <div class="preview-score"><strong>--</strong><span>점</span></div>
+            <div class="preview-row"><span>거북목</span><span><b>--°</b></span></div>
+            <div class="preview-row"><span>어깨 수평</span><span><b>--°</b></span></div>
+            <div class="preview-row"><span>골반 수평</span><span><b>--°</b></span></div>
+            <div class="lock-msg">
+              <b>로그인하면 내 최근 리포트가 여기 보여요</b>
+              <a href="#login" class="btn btn-primary btn-block">로그인하기</a>
+            </div>
           </div>
         </div>
       </div>
@@ -71,12 +109,11 @@
         <section class="stack-16">
           <div>
             <h2 class="section-title">오래 앉아 있다면 한 번쯤 확인해 보세요</h2>
-            <p class="muted-sm">출처: 건강보험심사평가원 국민관심질병통계, 질병관리청 국민건강영양조사, 과기정통부·NIA 스마트폰 과의존 실태조사</p>
+            <p class="muted-sm">출처: 건강보험심사평가원 진료인원 통계(2026.5 보도), 과기정통부·NIA 「2025 스마트폰 과의존 실태조사」(2026.3 발표)</p>
           </div>
           <div class="grid-3">
-            <div class="card"><strong class="stat">254만 명</strong><b>거북목증후군 진료인원</b><span class="muted-sm">2024년, 10년 전보다 약 35% 늘었어요</span></div>
-            <div class="card"><strong class="stat">9.0시간</strong><b>성인 하루 평균 좌식시간</b><span class="muted-sm">2023년, 2018년 8.3시간에서 늘었어요</span></div>
-            <div class="card"><strong class="stat">36.5%</strong><b>대학생 스마트폰 과의존 위험군</b><span class="muted-sm">2025년, 전체 이용자는 22.7%</span></div>
+            <div class="card"><strong class="stat">254만 명</strong><b>거북목증후군 진료인원</b><span class="muted-sm">2024년 기준 · 10년 전보다 약 35% 늘었어요</span></div>
+            <div class="card"><strong class="stat">36.5%</strong><b>대학생 스마트폰 과의존 위험군</b><span class="muted-sm">2025년 기준 · 전체 이용자는 22.7%</span></div>
           </div>
         </section>
 
@@ -113,7 +150,7 @@
           <div class="grid-3">
             <a href="#measure" class="card card-link"><h3>체형 진단 →</h3><span class="muted">웹캠으로 3가지 항목을 측정해요</span></a>
             <a href="#history" class="card card-link"><h3>기록 보기 →</h3><span class="muted">날짜별 기록과 변화 그래프</span></a>
-            <a href="#guide" class="card card-link"><h3>교정 가이드 →</h3><span class="muted">맞춤 스트레칭과 FAQ 챗봇</span></a>
+            <a href="#guide" class="card card-link"><h3>교정 가이드 →</h3><span class="muted">맞춤 스트레칭과 병원 찾기</span></a>
           </div>
         </section>
 
@@ -223,8 +260,8 @@
         </div>
 
         <div class="sync-banner" id="sync-banner">
-          <div><b>지금 기록은 이 브라우저에만 저장돼 있어요</b><p>로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요. 안 해도 측정과 저장은 그대로 돼요.</p></div>
-          <a href="#login" class="btn btn-outline">로그인하고 기록 동기화</a>
+          <div><b>기록 동기화는 로그인이 필요해요</b><p>지금 기록은 이 브라우저에만 임시로 저장돼요. 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.</p></div>
+          <a href="#login" class="btn btn-outline">로그인하기</a>
         </div>
 
         <section class="card chart-box" aria-label="변화 그래프">
@@ -253,7 +290,27 @@
         </section>
 
         <section class="stack-16">
-          <h2 class="section-title">자세 코치에게 물어보기</h2>
+          <div>
+            <h2 class="section-title" id="hospital">병원 찾기</h2>
+            <p class="muted-sm">건강보험심사평가원 병원정보서비스 (공공데이터포털 오픈API)</p>
+          </div>
+          <div class="filter-row">
+            <label>지역<select id="region-select"><option>불러오는 중</option></select></label>
+            <label>진료과목<select id="dept-select"><option>불러오는 중</option></select></label>
+            <button id="hospital-btn" class="btn btn-primary">조회</button>
+          </div>
+          <ul id="hospital-list" class="record-list"></ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- ⑥ FAQ · 챗봇 -->
+    <section data-page="faq" class="page">
+      <div class="container stack-24">
+          <div>
+            <h1 class="page-title">FAQ</h1>
+            <p class="muted-sm">자주 묻는 질문을 누르거나, AI 자세 코치에게 직접 물어보세요.</p>
+          </div>
           <div class="card chat">
             <div id="chat-box" class="chat-box">
               <p class="bubble bot">궁금한 질문을 골라 보세요.</p>
@@ -265,24 +322,18 @@
                 <input id="ai-q" type="text" placeholder="예: 어깨가 왼쪽으로 기울었는데 뭐부터 하면 될까요?">
                 <button class="btn btn-primary" type="submit">보내기</button>
               </div>
-              <p class="ai-credit">AI 자세 코치는 Google Gemini 2.5 Flash로 답해요 · 내 최근 측정 결과를 참고해요 · 참고용이며 의학적 진단이 아니에요</p>
+              <div class="ai-bottom">
+                <!-- AI 모델 고르기 (클로드 모델 선택처럼) -->
+                <div class="model-picker">
+                  <button id="model-btn" class="model-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="model-name">Gemini 2.5 Flash</span><span class="caret" aria-hidden="true">▾</span>
+                  </button>
+                  <ul id="model-menu" class="model-menu" role="listbox" hidden></ul>
+                </div>
+                <p id="ai-credit" class="ai-credit">내 최근 측정 결과를 참고해서 답해요 · 참고용이며 의학적 진단이 아니에요</p>
+              </div>
             </form>
-            <!-- Gemini 키 설정: 키는 코드(GitHub)에 넣지 않고 이 브라우저에만 저장 -->
           </div>
-        </section>
-
-        <section class="stack-16">
-          <div>
-            <h2 class="section-title">병원 찾기</h2>
-            <p class="muted-sm">건강보험심사평가원 병원정보서비스 (공공데이터포털 오픈API)</p>
-          </div>
-          <div class="filter-row">
-            <label>지역<select id="region-select"><option>불러오는 중</option></select></label>
-            <label>진료과목<select id="dept-select"><option>불러오는 중</option></select></label>
-            <button id="hospital-btn" class="btn btn-primary">조회</button>
-          </div>
-          <ul id="hospital-list" class="record-list"></ul>
-        </section>
       </div>
     </section>
 
@@ -299,6 +350,7 @@
           <label class="field">아이디<input type="text" id="login-id" placeholder="아이디를 입력해 주세요" autocomplete="username"></label>
           <label class="field">비밀번호<input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" autocomplete="current-password"></label>
           <button type="submit" class="btn btn-primary btn-block">로그인</button>
+          <p class="form-msg" role="status"></p>
         </form>
         <p class="center muted-sm">처음이에요? <a href="#signup"><b>회원가입</b></a></p>
         <ul class="info-list"><li>저장되는 건 날짜, 각도, 점수 숫자뿐이에요</li><li>영상과 사진은 로그인해도 저장하지 않아요</li></ul>
@@ -321,6 +373,7 @@
           <label class="field">비밀번호<input type="password" id="signup-pw" placeholder="6자 이상" autocomplete="new-password"></label>
           <label class="field">비밀번호 확인<input type="password" id="signup-pw2" placeholder="한 번 더 입력해 주세요" autocomplete="new-password"></label>
           <button type="submit" class="btn btn-primary btn-block">가입하고 시작하기</button>
+          <p class="form-msg" role="status"></p>
         </form>
         <p class="center muted-sm">이 브라우저에 있던 기록도 내 계정으로 옮겨져요.</p>
       </div>
@@ -331,6 +384,6 @@
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=13"></script>
+  <script type="module" src="js/app.js?v=19"></script>
 </body>
 </html>

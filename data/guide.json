@@ -2,55 +2,61 @@
   {
     "key": "neck",
     "title": "턱 당기기",
-    "how": "등을 펴고 앉아 정면을 본 채로 턱을 뒤로 당겨 이중턱을 만들고 5초 유지해요.",
-    "count": "10회 × 3세트",
+    "how": "등을 펴고 앉아 정면을 본 채로 턱을 뒤로 당겨 이중턱을 만들고 그대로 유지해요. 목 앞쪽 깊은 근육을 키우는 동작이에요.",
+    "count": "20~30초 유지 × 3회",
     "caution": "고개를 숙이지 말고 뒤로만 당겨요.",
     "image": "",
-    "source": ""
+    "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
+    "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972"
   },
   {
     "key": "neck",
-    "title": "가슴 열기",
-    "how": "문틀 양쪽에 팔을 ㄴ자로 대고 몸을 앞으로 천천히 밀어 가슴 앞쪽을 늘려요.",
-    "count": "15초 × 3회",
-    "caution": "어깨가 아프면 팔 높이를 낮춰요.",
+    "title": "가슴 펴기",
+    "how": "양손을 등 뒤에서 깍지 끼고 팔을 쭉 펴면서 가슴을 앞으로 열어요. 앞으로 말린 어깨와 굽은 목을 펴 줘요.",
+    "count": "10~30초 × 3회 (20~30분마다)",
+    "caution": "어깨가 아프면 팔을 덜 들어 올려요.",
     "image": "",
-    "source": ""
+    "source": "국민건강보험공단 건강iN 매거진 「그러다 거북목 될라」",
+    "sourceUrl": "https://www.nhis.or.kr/magazin/125/html/c05.html"
   },
   {
     "key": "shoulder",
     "title": "옆목 늘리기",
-    "how": "높은 쪽 어깨를 내리고, 고개를 반대쪽으로 천천히 기울여 목 옆을 늘려요.",
-    "count": "20초 × 양쪽 2회",
-    "caution": "손으로 세게 당기지 말고 머리 무게로만 늘려요.",
+    "how": "높은 쪽 어깨를 내리고, 고개를 반대쪽으로 천천히 기울여 목 옆을 가볍게 늘려요.",
+    "count": "10~30초 × 양쪽 2회",
+    "caution": "뻐근할 만큼 세게 늘리면 오히려 다칠 수 있어요. 가볍게 늘어나는 느낌까지만 해요.",
     "image": "",
-    "source": ""
+    "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
+    "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972"
   },
   {
     "key": "shoulder",
     "title": "날개뼈 모으기",
-    "how": "팔을 옆구리에 붙이고 양쪽 날개뼈를 등 가운데로 모아 5초 유지해요.",
-    "count": "10회 × 2세트",
+    "how": "팔을 옆구리에 붙이고 양쪽 날개뼈를 등 가운데로 모아 그대로 유지해요.",
+    "count": "20~30초 유지 × 3회",
     "caution": "어깨가 귀 쪽으로 올라가지 않게 해요.",
     "image": "",
-    "source": ""
+    "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
+    "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972"
   },
   {
     "key": "pelvis",
-    "title": "엉덩이 늘리기",
-    "how": "의자에 앉아 한쪽 발목을 반대쪽 무릎 위에 올리고, 허리를 편 채 상체를 살짝 앞으로 숙여요.",
-    "count": "20초 × 양쪽 2회",
-    "caution": "무릎을 억지로 누르지 않아요.",
+    "title": "엉덩이 근육 늘리기",
+    "how": "의자에 앉아 한쪽 다리를 반대쪽 허벅지에 올려 숫자 4 모양을 만들고, 허리를 편 채 상체를 앞으로 숙여요.",
+    "count": "20초 × 3회 · 양쪽",
+    "caution": "허리가 둥글게 말리지 않게 해요.",
     "image": "",
-    "source": ""
+    "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
+    "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html"
   },
   {
     "key": "pelvis",
-    "title": "골반 앞쪽 늘리기",
-    "how": "한쪽 무릎을 바닥에 대고 다른 발은 앞에 둔 자세에서 골반을 앞으로 천천히 밀어요.",
-    "count": "20초 × 양쪽 2회",
+    "title": "골반 앞쪽 늘리기 (장요근)",
+    "how": "한쪽 무릎을 바닥에 대고 런지 자세를 한 뒤, 상체를 앞으로 밀어 골반 아래와 허벅지 앞쪽을 늘려요.",
+    "count": "20초 × 3회 · 양쪽",
     "caution": "허리가 과하게 꺾이지 않게 배에 힘을 줘요.",
     "image": "",
-    "source": ""
+    "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
+    "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html"
   }
 ]
