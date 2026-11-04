@@ -251,8 +251,8 @@ function loop() {
 
     const lm = res.landmarks[0];
     if (lm) {
-      drawer.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: '#FFFFFF', lineWidth: 3 });
-      drawer.drawLandmarks(lm, { color: '#FFFFFF', fillColor: '#555555', radius: 4 });
+      drawer.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: '#38BDF8', lineWidth: 3 });
+      drawer.drawLandmarks(lm, { color: '#FFFFFF', fillColor: '#1D5FD1', radius: 4 });
 
       current = calcAngles(lm);
       if (samples) samples.push(current);
@@ -474,8 +474,8 @@ document.addEventListener('pagechange', e => {
       data: {
         labels,
         datasets: [
-          { label: `${CRITERIA[key].name} 각도`, data: values, borderColor: '#333333', backgroundColor: '#333333', tension: 0.3, pointRadius: 5 },
-          { label: `양호 기준 ${good}°`, data: labels.map(() => good), borderColor: '#9E9E9E', borderDash: [6, 6], pointRadius: 0 }
+          { label: `${CRITERIA[key].name} 각도`, data: values, borderColor: '#1D5FD1', backgroundColor: '#1D5FD1', tension: 0.3, pointRadius: 5 },
+          { label: `양호 기준 ${good}°`, data: labels.map(() => good), borderColor: '#0E7C86', borderDash: [6, 6], pointRadius: 0 }
         ]
       },
       options: {

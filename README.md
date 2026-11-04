@@ -52,5 +52,5 @@ poseai/
 https://25730011-png.github.io/poseai
 
 ## 지금 버전
-- 와이어프레임(흑백) 버전으로 기능부터 개발 중
-- 디자인(색·글꼴·이미지)은 기능 완성 후 `css/style.css`에 입힐 예정
+- 디자인 시안(남색·파랑·하늘색, Poppins·Gothic A1·도현체·Noto Sans KR) 적용 버전
+- 로고: asset/logo.svg
