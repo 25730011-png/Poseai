@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoseAi | 웹캠으로 보는 나의 체형</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 탑바 -->
+  <div class="topbar">
+    <div class="inner">
+      <span class="ph-label">탑바 · 안내 문구 자리</span>
+      <span><a href="#home">이용 안내</a> · <a href="#guide">자주 묻는 질문</a></span>
+    </div>
+  </div>
+
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="inner">
+      <a href="#home" class="logo" aria-label="PoseAi 홈"><span class="logo-box">LOGO</span><span>PoseAi</span></a>
+      <nav class="nav" aria-label="주요 메뉴">
+        <a href="#measure">측정하기</a>
+        <a href="#history">내 기록</a>
+        <a href="#guide">교정 가이드</a>
+      </nav>
+      <div class="header-actions">
+        <a href="#login" class="btn btn-outline btn-sm">로그인</a>
+        <a href="#measure" class="btn btn-primary btn-sm">무료로 측정하기</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ① 메인 -->
+    <section data-page="home" class="page">
+      <div class="container stack-40">
+        <section class="hero">
+          <div class="hero-text">
+            <h1>웹캠으로 보는 나의 체형</h1>
+            <span class="ph-bar w80"></span>
+            <span class="ph-bar w60"></span>
+            <div class="btn-row">
+              <a href="#measure" class="btn btn-primary">측정 시작하기</a>
+              <a href="#history" class="btn btn-outline">내 기록 보기</a>
+            </div>
+          </div>
+          <div class="card hero-side">
+            <span class="ph-label">리포트 미리보기</span>
+            <div class="ph-img" style="height:180px"><span>점수·항목 결과 미리보기</span></div>
+          </div>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">통계</h2>
+          <div class="grid-3">
+            <div class="card"><span class="ph-label">통계 수치</span><span class="ph-bar w70"></span><span class="ph-bar w50 thin"></span></div>
+            <div class="card"><span class="ph-label">통계 수치</span><span class="ph-bar w70"></span><span class="ph-bar w50 thin"></span></div>
+            <div class="card"><span class="ph-label">통계 수치</span><span class="ph-bar w70"></span><span class="ph-bar w50 thin"></span></div>
+          </div>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">이렇게 진행돼요</h2>
+          <ol class="grid-4">
+            <li class="card card-soft"><span class="step-num">1</span><h3>카메라 허용</h3><span class="ph-bar w80 thin"></span></li>
+            <li class="card card-soft"><span class="step-num">2</span><h3>정면 5초</h3><span class="ph-bar w80 thin"></span></li>
+            <li class="card card-soft"><span class="step-num">3</span><h3>측면 5초</h3><span class="ph-bar w80 thin"></span></li>
+            <li class="card card-soft"><span class="step-num">4</span><h3>리포트·가이드</h3><span class="ph-bar w80 thin"></span></li>
+          </ol>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">측정 항목</h2>
+          <div class="grid-3">
+            <article class="card"><div class="ph-img"><span>거북목 그림</span></div><h3>거북목</h3><span class="ph-bar w90 thin"></span></article>
+            <article class="card"><div class="ph-img"><span>어깨 그림</span></div><h3>어깨 수평</h3><span class="ph-bar w90 thin"></span></article>
+            <article class="card"><div class="ph-img"><span>골반 그림</span></div><h3>골반 수평</h3><span class="ph-bar w90 thin"></span></article>
+          </div>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">바로가기</h2>
+          <div class="grid-3">
+            <a href="#measure" class="card card-link"><h3>체형 진단 →</h3><span class="ph-bar w70 thin"></span></a>
+            <a href="#history" class="card card-link"><h3>기록 보기 →</h3><span class="ph-bar w70 thin"></span></a>
+            <a href="#guide" class="card card-link"><h3>교정 가이드 →</h3><span class="ph-bar w70 thin"></span></a>
+          </div>
+        </section>
+
+        <div class="card card-soft notice"><span class="ph-label">안내 박스 · 영상 저장 안 함</span><span class="ph-bar w70 thin"></span></div>
+      </div>
+    </section>
+
+    <!-- ② 촬영·측정 (js/measure.js) -->
+    <section data-page="measure" class="page">
+      <div class="container stack-24">
+        <div class="row-between">
+          <h1 class="page-title">체형 측정</h1>
+          <ol class="steps" aria-label="측정 단계">
+            <li id="step-front" class="step active">1 정면 5초</li>
+            <li id="step-side" class="step">2 측면 5초</li>
+          </ol>
+        </div>
+
+        <div class="measure-layout">
+          <div class="stack-16 measure-main">
+            <div class="camera-box">
+              <span class="cam-label">웹캠 화면</span>
+              <video id="video" autoplay playsinline muted></video>
+              <canvas id="canvas"></canvas>
+              <div id="countdown" class="countdown"></div>
+              <p id="status" class="cam-status">카메라를 허용해 주세요</p>
+            </div>
+            <p id="guide-text" class="guide-text">안내 문구</p>
+            <div class="center"><button id="start-btn" class="btn btn-primary btn-lg">측정 시작</button></div>
+          </div>
+
+          <aside class="stack-16 measure-side">
+            <div class="card card-soft">
+              <h2 class="card-title">측정 전 확인</h2>
+              <span class="ph-bar w90 thin"></span><span class="ph-bar w80 thin"></span><span class="ph-bar w85 thin"></span>
+            </div>
+            <div class="card">
+              <h2 class="card-title">실시간 값</h2>
+              <div class="row-between"><span>어깨 수평</span><b id="live-shoulder">--°</b></div>
+              <div class="row-between"><span>골반 수평</span><b id="live-pelvis">--°</b></div>
+              <div class="row-between"><span>거북목</span><b id="live-neck">--°</b></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ③ 체형 리포트 (js/report.js가 측정 결과로 채움) -->
+    <section data-page="report" class="page">
+      <div class="container stack-24">
+        <div>
+          <h1 class="page-title">체형 리포트</h1>
+          <p class="muted-sm" id="report-date">측정 날짜</p>
+        </div>
+
+        <section class="card card-soft score-box" aria-label="종합 점수">
+          <div class="stack-8">
+            <span class="ph-label">종합 점수 (100점)</span>
+            <strong id="total-score">--점</strong>
+            <span id="score-diff" class="muted"></span>
+          </div>
+          <div class="badge-row" id="level-count"></div>
+        </section>
+
+        <section id="result-list" class="grid-3" aria-label="항목별 결과">
+          <div class="card"><span class="ph-label">거북목 결과</span><span class="ph-bar w60"></span><span class="ph-bar w90 thin"></span></div>
+          <div class="card"><span class="ph-label">어깨 수평 결과</span><span class="ph-bar w60"></span><span class="ph-bar w90 thin"></span></div>
+          <div class="card"><span class="ph-label">골반 수평 결과</span><span class="ph-bar w60"></span><span class="ph-bar w90 thin"></span></div>
+        </section>
+
+        <div class="btn-row center">
+          <button id="save-btn" class="btn btn-primary">기록 저장</button>
+          <a href="#guide" class="btn btn-outline">교정 가이드 보기</a>
+          <a href="#measure" class="btn btn-outline">다시 측정</a>
+        </div>
+
+        <div class="card card-soft notice"><span class="ph-label">참고용 안내 문구</span></div>
+      </div>
+    </section>
+
+    <!-- ④ 기록·그래프 (js/history.js) -->
+    <section data-page="history" class="page">
+      <div class="container stack-24">
+        <div class="row-between">
+          <h1 class="page-title">기록·그래프</h1>
+          <a href="#measure" class="btn btn-primary">새로 측정하기</a>
+        </div>
+
+        <div class="row-between">
+          <div class="tabs" role="tablist" aria-label="그래프 항목">
+            <button class="tab active" role="tab" aria-selected="true" data-key="neck">거북목</button>
+            <button class="tab" role="tab" aria-selected="false" data-key="shoulder">어깨</button>
+            <button class="tab" role="tab" aria-selected="false" data-key="pelvis">골반</button>
+          </div>
+          <label class="inline-label">정렬
+            <select id="sort-select">
+              <option value="date">날짜순</option>
+              <option value="score">점수순</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="card card-soft row-between">
+          <div class="stack-8" style="flex:1"><span class="ph-label">로그인·동기화 안내</span><span class="ph-bar w70 thin"></span></div>
+          <a href="#login" class="btn btn-outline">로그인하고 기록 동기화</a>
+        </div>
+
+        <section class="card" aria-label="변화 그래프">
+          <h2 class="card-title" id="chart-title">각도 변화</h2>
+          <div class="chart-wrap ph-img"><span>변화 그래프 (Chart.js)</span><canvas id="chart"></canvas></div>
+        </section>
+
+        <section class="stack-8">
+          <h2 class="card-title">기록 목록</h2>
+          <ul id="record-list" class="record-list">
+            <li class="empty">기록 목록 자리</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- ⑤ 교정 가이드 (js/guide.js) -->
+    <section data-page="guide" class="page">
+      <div class="container stack-40">
+        <section class="stack-16">
+          <h1 class="page-title">나에게 맞는 스트레칭</h1>
+          <div id="guide-list" class="grid-2">
+            <article class="card stretch-card"><div class="ph-img stretch-img"><span>동작 그림</span></div><div class="stack-8" style="flex:1"><span class="ph-label">스트레칭 이름</span><span class="ph-bar w90 thin"></span><span class="ph-bar w70 thin"></span></div></article>
+            <article class="card stretch-card"><div class="ph-img stretch-img"><span>동작 그림</span></div><div class="stack-8" style="flex:1"><span class="ph-label">스트레칭 이름</span><span class="ph-bar w90 thin"></span><span class="ph-bar w70 thin"></span></div></article>
+          </div>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">자세 코치에게 물어보기</h2>
+          <div class="card chat">
+            <div id="chat-box" class="chat-box">
+              <p class="bubble bot">궁금한 질문을 골라 보세요.</p>
+            </div>
+            <div id="faq-buttons" class="faq-buttons"></div>
+            <form id="ai-form" class="ai-form">
+              <label for="ai-q"><b>AI 자세 코치에게 직접 물어보기</b></label>
+              <div class="ai-row">
+                <input id="ai-q" type="text" placeholder="질문 입력">
+                <button class="btn btn-primary" type="submit">보내기</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="stack-16">
+          <h2 class="section-title">병원 찾기</h2>
+          <div class="filter-row">
+            <label>지역<select id="region-select"><option>시·도 선택</option></select></label>
+            <label>진료과목<select id="dept-select"><option>과목 선택</option></select></label>
+            <button id="hospital-btn" class="btn btn-primary">조회</button>
+          </div>
+          <ul id="hospital-list" class="record-list">
+            <li class="empty">병원 목록 자리</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <!-- ⑥ 로그인 (선택) -->
+    <section data-page="login" class="page auth-page">
+      <div class="auth-card">
+        <a href="#home" class="logo logo-center" aria-label="PoseAi 홈"><span class="logo-box">LOGO</span><span>PoseAi</span></a>
+        <h1 class="page-title center">로그인</h1>
+        <div class="auth-tabs"><a href="#login" class="active">로그인</a><a href="#signup">회원가입</a></div>
+        <form id="login-form" class="stack-16">
+          <label class="field">아이디<input type="text" id="login-id" placeholder="아이디" autocomplete="username"></label>
+          <label class="field">비밀번호<input type="password" id="login-pw" placeholder="비밀번호" autocomplete="current-password"></label>
+          <button type="submit" class="btn btn-primary btn-block">로그인</button>
+        </form>
+        <p class="center muted-sm">처음이에요? <a href="#signup">회원가입</a></p>
+        <a href="#history" class="center muted-sm">로그인 없이 계속 쓰기</a>
+      </div>
+    </section>
+
+    <!-- ⑦ 회원가입 (선택) -->
+    <section data-page="signup" class="page auth-page">
+      <div class="auth-card">
+        <a href="#home" class="logo logo-center" aria-label="PoseAi 홈"><span class="logo-box">LOGO</span><span>PoseAi</span></a>
+        <h1 class="page-title center">회원가입</h1>
+        <div class="auth-tabs"><a href="#login">로그인</a><a href="#signup" class="active">회원가입</a></div>
+        <form id="signup-form" class="stack-16">
+          <label class="field">아이디<input type="text" id="signup-id" placeholder="아이디" autocomplete="username"></label>
+          <label class="field">닉네임<input type="text" id="signup-nick" placeholder="닉네임"></label>
+          <label class="field">비밀번호<input type="password" id="signup-pw" placeholder="비밀번호" autocomplete="new-password"></label>
+          <label class="field">비밀번호 확인<input type="password" id="signup-pw2" placeholder="비밀번호 확인" autocomplete="new-password"></label>
+          <button type="submit" class="btn btn-primary btn-block">가입하고 시작하기</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer"><span class="ph-label">푸터 · 참고용 안내 문구</span></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
