@@ -3,20 +3,21 @@
 // 화면이 바뀌면 'pagechange' 이벤트를 보내서 각 화면 JS가 필요할 때 실행되게 함
 //   예) document.addEventListener('pagechange', e => { if (e.detail === 'report') { ... } });
 
-const PAGES = ['home', 'measure', 'report', 'history', 'guide'];
+const PAGES = ['home', 'measure', 'report', 'history', 'guide', 'login', 'signup'];
 
 function showPage() {
   const id = location.hash.replace('#', '');
   const page = PAGES.includes(id) ? id : 'home';
 
   document.querySelectorAll('.page').forEach(sec => {
-    sec.classList.toggle('active', sec.id === page);
+    sec.classList.toggle('active', sec.dataset.page === page);
   });
   document.querySelectorAll('.nav a').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === '#' + page);
   });
 
-  window.scrollTo(0, 0);
+  // 화면 바뀌면 맨 위로 (section은 id 대신 data-page를 써서 브라우저가 중간으로 점프하지 않게 함)
+  setTimeout(() => window.scrollTo(0, 0), 0);
   document.dispatchEvent(new CustomEvent('pagechange', { detail: page }));
 }
 

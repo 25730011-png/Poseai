@@ -91,11 +91,18 @@ async function loadModel() {
   if (landmarker) return;
   statusEl.textContent = 'AI 모델 불러오는 중...';
   const vision = await FilesetResolver.forVisionTasks(WASM_URL);
-  landmarker = await PoseLandmarker.createFromOptions(vision, {
-    baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
+  const options = delegate => ({
+    baseOptions: { modelAssetPath: MODEL_URL, delegate },
     runningMode: 'VIDEO',
     numPoses: 1
   });
+  try {
+    landmarker = await PoseLandmarker.createFromOptions(vision, options('GPU'));
+  } catch (err) {
+    // 일부 패드·폰은 GPU 모드가 안 돼서 CPU로 다시 시도
+    console.warn('GPU 실패, CPU로 전환', err);
+    landmarker = await PoseLandmarker.createFromOptions(vision, options('CPU'));
+  }
   drawer = new DrawingUtils(ctx);
 }
 
@@ -104,7 +111,7 @@ async function startCamera() {
   try {
     await loadModel();
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 640, height: 480 },
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, // 패드·폰은 전면 카메라
       audio: false
     });
     video.srcObject = stream;
@@ -146,6 +153,11 @@ function loop() {
 
       current = calcAngles(lm);
       if (samples) samples.push(current);
+
+      // 오른쪽 '실시간 값' 칸
+      document.getElementById('live-shoulder').textContent = fmt(current.shoulder);
+      document.getElementById('live-pelvis').textContent = fmt(current.pelvis);
+      document.getElementById('live-neck').textContent = fmt(current.neck);
 
       if (!samples) {
         statusEl.textContent = '잘 인식되고 있어요';
