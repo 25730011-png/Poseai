@@ -744,6 +744,8 @@ document.addEventListener('pagechange', e => {
   }
 
   fetch('data/body-parts.json').then(r => r.json()).then(d => { parts = d; render(); }).catch(() => {});
+  // 홈 슬라이드에서 부위를 누르면 그 부위가 선택된 채로 가이드가 열림
+  document.addEventListener('selectpart', e => { selectedPart = e.detail; });
 
   // 추천 영상: 지금 보여주는 스트레칭과 관련된 영상만 (같은 영상은 한 번, 관련 항목은 합쳐서)
   // 처음엔 썸네일만 보여주고, 누르면 그 자리에서 유튜브 영상 재생 (페이지가 무거워지지 않게)
@@ -1364,4 +1366,59 @@ function authMessage(err) {
       console.error(err);
     }
   });
+})();
+
+
+/* =====================================================================
+   9. 홈 히어로 슬라이드 + top바 바로가기
+   - 옆으로 스와이프(터치·트랙패드) / 화살표 / 점으로 넘기기
+   - 7초마다 자동으로 넘어감 (마우스를 올리거나 만지면 멈춤, 움직임 줄이기 설정이면 안 함)
+   ===================================================================== */
+(() => {
+  const track = document.getElementById('hero-track');
+  if (!track) return;
+  const slides = [...track.children];
+  const dots = [...document.querySelectorAll('#hero-dots button')];
+  const prev = document.getElementById('hero-prev');
+  const next = document.getElementById('hero-next');
+  let index = 0;
+
+  const go = i => {
+    index = (i + slides.length) % slides.length;
+    track.scrollTo({ left: track.clientWidth * index, behavior: 'smooth' });
+  };
+  const update = () => {
+    index = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+    dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === index)));
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+  };
+  let t;
+  track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(update, 60); });
+  dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+  prev.addEventListener('click', () => go(index - 1));
+  next.addEventListener('click', () => go(index + 1));
+  window.addEventListener('resize', () => track.scrollTo({ left: track.clientWidth * index }));
+  update();
+
+  // 자동 넘김
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let paused = false;
+  const hero = track.closest('.hero');
+  ['mouseenter', 'focusin', 'touchstart'].forEach(ev => hero.addEventListener(ev, () => { paused = true; }, { passive: true }));
+  ['mouseleave', 'focusout'].forEach(ev => hero.addEventListener(ev, () => { paused = false; }));
+  setInterval(() => {
+    const onHome = document.querySelector('[data-page="home"]').classList.contains('active');
+    if (!reduce && !paused && onHome && !document.hidden) go(index + 1);
+  }, 7000);
+
+  // 슬라이드 2의 부위 버튼 → 가이드에서 그 부위가 열린 상태로
+  document.querySelectorAll('.pick-btn').forEach(a => a.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('selectpart', { detail: a.dataset.part }));
+  }));
+
+  // top바 바로가기: 화면 이동 후 해당 위치로 스크롤
+  document.querySelectorAll('.topbar a[data-scroll]').forEach(a => a.addEventListener('click', () => {
+    setTimeout(() => document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: 'smooth' }), 150);
+  }));
 })();

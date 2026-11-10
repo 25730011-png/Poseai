@@ -7,7 +7,7 @@
     "how": "등을 펴고 앉아 정면을 본 채로 턱을 뒤로 당겨 이중턱을 만들고 그대로 유지해요. 목 앞쪽 깊은 근육을 키우는 동작이에요.",
     "count": "20~30초 유지 × 3회",
     "caution": "고개를 숙이지 말고 뒤로만 당겨요.",
-    "image": "asset/stretch/chin-tuck.svg",
+    "image": "asset/stretch/chin-tuck.jpg",
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
@@ -26,7 +26,7 @@
     "how": "양손을 등 뒤에서 깍지 끼고 팔을 쭉 펴면서 가슴을 앞으로 열어요. 앞으로 말린 어깨와 굽은 목을 펴 줘요.",
     "count": "10~30초 × 3회 (20~30분마다)",
     "caution": "어깨가 아프면 팔을 덜 들어 올려요.",
-    "image": "asset/stretch/chest-open.svg",
+    "image": "asset/stretch/chest-open.jpg",
     "source": "국민건강보험공단 건강iN 매거진 「그러다 거북목 될라」",
     "sourceUrl": "https://www.nhis.or.kr/magazin/125/html/c05.html",
     "video": {
@@ -45,7 +45,7 @@
     "how": "높은 쪽 어깨를 내리고, 고개를 반대쪽으로 천천히 기울여 목 옆을 가볍게 늘려요.",
     "count": "10~30초 × 양쪽 2회",
     "caution": "뻐근할 만큼 세게 늘리면 오히려 다칠 수 있어요. 가볍게 늘어나는 느낌까지만 해요.",
-    "image": "asset/stretch/side-neck.svg",
+    "image": "asset/stretch/side-neck.jpg",
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
@@ -64,7 +64,7 @@
     "how": "팔을 옆구리에 붙이고 양쪽 날개뼈를 등 가운데로 모아 그대로 유지해요.",
     "count": "20~30초 유지 × 3회",
     "caution": "어깨가 귀 쪽으로 올라가지 않게 해요.",
-    "image": "asset/stretch/scapula.svg",
+    "image": "asset/stretch/scapula.jpg",
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
@@ -84,7 +84,7 @@
     "how": "의자에 바르게 앉아 한쪽 팔을 머리 위로 올리고, 반대쪽으로 상체를 천천히 기울여 옆구리를 늘려요. 쏠린 쪽 반대 방향을 조금 더 해 줘요.",
     "count": "15초 × 양쪽 2회",
     "caution": "엉덩이가 의자에서 뜨지 않게, 상체가 앞으로 숙여지지 않게 해요.",
-    "image": "asset/stretch/side-bend.svg",
+    "image": "asset/stretch/side-bend.jpg",
     "source": "",
     "sourceUrl": ""
   },
@@ -96,7 +96,7 @@
     "how": "의자에 앉아 한쪽 다리를 반대쪽 허벅지에 올려 숫자 4 모양을 만들고, 허리를 편 채 상체를 앞으로 숙여요.",
     "count": "20초 × 3회 · 양쪽",
     "caution": "허리가 둥글게 말리지 않게 해요.",
-    "image": "asset/stretch/glute.svg",
+    "image": "asset/stretch/glute.jpg",
     "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
     "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html",
     "video": {
@@ -115,7 +115,7 @@
     "how": "한쪽 무릎을 바닥에 대고 런지 자세를 한 뒤, 상체를 앞으로 밀어 골반 아래와 허벅지 앞쪽을 늘려요.",
     "count": "20초 × 3회 · 양쪽",
     "caution": "허리가 과하게 꺾이지 않게 배에 힘을 줘요.",
-    "image": "asset/stretch/hip-flexor.svg",
+    "image": "asset/stretch/hip-flexor.jpg",
     "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
     "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html",
     "video": {
@@ -134,7 +134,7 @@
     "how": "다리를 쭉 펴고 앉아 허벅지 앞쪽에 힘을 주면서 무릎 뒤쪽을 바닥으로 눌러요. 무릎 뒤에 계란이 있다고 생각하고 누르는 느낌이에요.",
     "count": "5초 힘주기 × 10회 (무리 없는 범위에서)",
     "caution": "무릎에 통증이 있으면 힘을 약하게 하거나 멈춰요.",
-    "image": "asset/stretch/quad-set.svg",
+    "image": "asset/stretch/quad-set.jpg",
     "source": "서울아산병원 건강TV 「무릎 관절 질환의 치료」 (정형외과 이범식 교수)",
     "sourceUrl": "https://www.amc.seoul.kr/asan/healthtv/video/videoDetail.do?videoId=2601",
     "video": {
@@ -155,7 +155,7 @@
     "how": "앉거나 누운 자세에서 한쪽 무릎을 쭉 편 채 다리를 천천히 들어 올렸다가 천천히 내려요.",
     "count": "양쪽 10회씩 (무리 없는 범위에서)",
     "caution": "허리가 뜨지 않게 배에 힘을 주고, 반동 없이 천천히 해요.",
-    "image": "asset/stretch/leg-raise.svg",
+    "image": "asset/stretch/leg-raise.jpg",
     "source": "서울아산병원 건강TV 「무릎 관절 질환의 치료」 (정형외과 이범식 교수)",
     "sourceUrl": "https://www.amc.seoul.kr/asan/healthtv/video/videoDetail.do?videoId=2601",
     "video": {
