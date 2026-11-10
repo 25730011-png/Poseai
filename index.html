@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=19">
+  <link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 
@@ -53,10 +53,11 @@
       <button id="sidebar-close" class="sidebar-close" type="button" aria-label="메뉴 닫기">✕</button>
     </div>
     <div class="sidebar-user">
-      <span class="avatar" aria-hidden="true">?</span>
-      <div><b>로그인이 필요해요</b><span class="muted-sm">지금은 게스트로 이용 중이에요</span></div>
+      <span class="avatar" id="sidebar-avatar" aria-hidden="true">?</span>
+      <div><b id="sidebar-name">로그인이 필요해요</b><span class="muted-sm" id="sidebar-sub">지금은 게스트로 이용 중이에요</span></div>
     </div>
-    <a href="#login" class="btn btn-primary btn-block">로그인 / 회원가입</a>
+    <a href="#login" class="btn btn-primary btn-block" id="sidebar-login">로그인 / 회원가입</a>
+    <button type="button" class="btn btn-outline btn-block" id="sidebar-logout" hidden>로그아웃</button>
     <nav class="sidebar-nav" aria-label="사이드 메뉴">
       <p class="sidebar-group">측정</p>
       <a href="#home">홈</a>
@@ -80,18 +81,18 @@
         <div class="container hero-inner">
           <div class="hero-text">
             <h1>웹캠으로 보는<br>나의 체형</h1>
-            <p>정면·측면을 5초씩 찍으면 거북목, 어깨 수평, 골반 수평 3가지를 수치와 단계로 알려 드려요.</p>
+            <p>정면·측면을 5초씩 찍으면 목부터 무릎까지 거북목, 어깨 수평, 상체 쏠림, 골반 수평, 무릎 정렬 5가지를 수치와 단계로 알려 드려요.</p>
             <div class="btn-row">
               <a href="#measure" class="btn btn-accent">측정 시작하기</a>
               <a href="#history" class="btn btn-ghost">내 기록 보기</a>
             </div>
             <ul class="hero-points">
               <li>정면·측면 각 5초</li>
-              <li>측정 항목 3가지</li>
+              <li>측정 항목 5가지</li>
               <li>영상 저장 안 함</li>
             </ul>
           </div>
-          <div class="preview-card locked" aria-label="체형 리포트 미리보기">
+          <div class="preview-card locked" id="preview-card" aria-label="체형 리포트 미리보기">
             <div class="row-between"><span class="muted-sm">내 체형 리포트</span><span class="chip-lock">로그인 필요</span></div>
             <div class="preview-score"><strong>--</strong><span>점</span></div>
             <div class="preview-row"><span>거북목</span><span><b>--°</b></span></div>
@@ -121,15 +122,15 @@
           <h2 class="section-title">이렇게 진행돼요</h2>
           <ol class="grid-4 steps-list">
             <li class="card card-soft"><span class="step-num">1</span><h3>카메라 허용</h3><span class="muted-sm">브라우저에서 바로, 설치 없이</span></li>
-            <li class="card card-soft"><span class="step-num">2</span><h3>정면 5초</h3><span class="muted-sm">어깨·골반 수평 측정</span></li>
+            <li class="card card-soft"><span class="step-num">2</span><h3>정면 5초</h3><span class="muted-sm">어깨·상체·골반·무릎 (발목까지 보이게)</span></li>
             <li class="card card-soft"><span class="step-num">3</span><h3>측면 5초</h3><span class="muted-sm">거북목 각도 측정</span></li>
             <li class="card card-soft"><span class="step-num">4</span><h3>리포트·가이드</h3><span class="muted-sm">점수, 기록 저장, 맞춤 스트레칭</span></li>
           </ol>
         </section>
 
         <section class="stack-16">
-          <h2 class="section-title">이 3가지를 측정해요</h2>
-          <div class="grid-3">
+          <h2 class="section-title">이 5가지를 측정해요</h2>
+          <div class="grid-5">
             <article class="card">
               <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="50" y1="95" x2="50" y2="20" stroke="#D4DEF2" stroke-width="2" stroke-dasharray="4 4"/><line x1="50" y1="95" x2="50" y2="60" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="60" x2="72" y2="28" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="20" r="12" fill="none" stroke="#1D5FD1" stroke-width="4"/><path d="M50 44 A16 16 0 0 1 59 47" fill="none" stroke="#8F5B00" stroke-width="3"/></svg></div>
               <h3>거북목</h3><p class="muted">측면에서 어깨→귀 선이 수직선과 이루는 각도</p><span class="chip">양호 15° 미만</span>
@@ -139,8 +140,16 @@
               <h3>어깨 수평</h3><p class="muted">정면에서 양쪽 어깨를 이은 선의 기울기</p><span class="chip">양호 2° 미만</span>
             </article>
             <article class="card">
+              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="60" y1="4" x2="60" y2="96" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><circle cx="68" cy="16" r="10" fill="none" stroke="#1D5FD1" stroke-width="4"/><line x1="46" y1="34" x2="88" y2="34" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="67" y1="34" x2="60" y2="72" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="72" x2="78" y2="72" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="48" y1="72" x2="46" y2="96" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="72" y1="72" x2="74" y2="96" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/></svg></div>
+              <h3>상체 쏠림</h3><p class="muted">정면에서 어깨 가운데와 골반 가운데를 이은 선이 수직선과 이루는 각도</p><span class="chip">양호 2° 미만</span>
+            </article>
+            <article class="card">
               <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="60" y1="5" x2="60" y2="55" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="34" y1="52" x2="86" y2="58" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="53" x2="36" y2="95" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="80" y1="57" x2="84" y2="95" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="52" x2="94" y2="52" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
               <h3>골반 수평</h3><p class="muted">정면에서 양쪽 엉덩이를 이은 선의 기울기</p><span class="chip">양호 3° 미만</span>
+            </article>
+            <article class="card">
+              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="40" y1="6" x2="80" y2="6" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="44" y1="6" x2="44" y2="94" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><line x1="76" y1="6" x2="76" y2="94" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><polyline points="44,6 34,50 44,94" fill="none" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="76,6 86,50 76,94" fill="none" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="50" r="5" fill="#1D5FD1"/><circle cx="86" cy="50" r="5" fill="#1D5FD1"/></svg></div>
+              <h3>무릎 정렬</h3><p class="muted">정면에서 엉덩이→무릎→발목이 일직선에서 벗어난 각도 (O·X다리 경향)</p><span class="chip">양호 5° 미만</span>
             </article>
           </div>
         </section>
@@ -148,7 +157,7 @@
         <section class="stack-16">
           <h2 class="section-title">무엇을 할까요?</h2>
           <div class="grid-3">
-            <a href="#measure" class="card card-link"><h3>체형 진단 →</h3><span class="muted">웹캠으로 3가지 항목을 측정해요</span></a>
+            <a href="#measure" class="card card-link"><h3>체형 진단 →</h3><span class="muted">웹캠으로 5가지 항목을 측정해요</span></a>
             <a href="#history" class="card card-link"><h3>기록 보기 →</h3><span class="muted">날짜별 기록과 변화 그래프</span></a>
             <a href="#guide" class="card card-link"><h3>교정 가이드 →</h3><span class="muted">맞춤 스트레칭과 병원 찾기</span></a>
           </div>
@@ -189,16 +198,18 @@
             <div class="card card-soft">
               <h2 class="card-title">측정 전 확인</h2>
               <ol class="check-list">
-                <li>카메라에서 2m쯤 떨어져 서기</li>
-                <li>머리부터 골반까지 화면에 보이게</li>
+                <li>카메라에서 2.5~3m 떨어져 서기</li>
+                <li>정면은 머리부터 발목까지 화면에 보이게</li>
                 <li>밝은 곳에서, 몸에 붙는 옷으로</li>
               </ol>
             </div>
             <div class="card">
               <h2 class="card-title">실시간 값</h2>
+              <div class="row-between"><span>거북목 (측면)</span><b id="live-neck">--°</b></div>
               <div class="row-between"><span>어깨 수평</span><b id="live-shoulder">--°</b></div>
+              <div class="row-between"><span>상체 쏠림</span><b id="live-trunk">--°</b></div>
               <div class="row-between"><span>골반 수평</span><b id="live-pelvis">--°</b></div>
-              <div class="row-between"><span>거북목</span><b id="live-neck">--°</b></div>
+              <div class="row-between"><span>무릎 정렬</span><b id="live-knee">--°</b></div>
             </div>
           </aside>
         </div>
@@ -227,6 +238,14 @@
         <section id="result-list" class="grid-3" aria-label="항목별 결과">
         </section>
 
+        <section id="combo-section" class="stack-16" hidden>
+          <div>
+            <h2 class="section-title">같이 나타난 자세 패턴</h2>
+            <p class="muted-sm" id="combo-notice"></p>
+          </div>
+          <div id="combo-list" class="grid-2"></div>
+        </section>
+
         <div class="btn-row center">
           <button id="save-btn" class="btn btn-primary">기록 저장</button>
           <a href="#guide" class="btn btn-outline">교정 가이드 보기</a>
@@ -249,7 +268,9 @@
           <div class="tabs" role="tablist" aria-label="그래프 항목">
             <button class="tab active" role="tab" aria-selected="true" data-key="neck">거북목</button>
             <button class="tab" role="tab" aria-selected="false" data-key="shoulder">어깨</button>
+            <button class="tab" role="tab" aria-selected="false" data-key="trunk">상체</button>
             <button class="tab" role="tab" aria-selected="false" data-key="pelvis">골반</button>
+            <button class="tab" role="tab" aria-selected="false" data-key="knee">무릎</button>
           </div>
           <label class="inline-label">정렬
             <select id="sort-select">
@@ -260,8 +281,8 @@
         </div>
 
         <div class="sync-banner" id="sync-banner">
-          <div><b>기록 동기화는 로그인이 필요해요</b><p>지금 기록은 이 브라우저에만 임시로 저장돼요. 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.</p></div>
-          <a href="#login" class="btn btn-outline">로그인하기</a>
+          <div><b id="sync-title">기록 동기화는 로그인이 필요해요</b><p id="sync-text">지금 기록은 이 브라우저에만 임시로 저장돼요. 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.</p></div>
+          <a href="#login" class="btn btn-outline" id="sync-btn">로그인하기</a>
         </div>
 
         <section class="card chart-box" aria-label="변화 그래프">
@@ -283,10 +304,27 @@
       <div class="container stack-48">
         <section class="stack-16">
           <div>
-            <h1 class="page-title">나에게 맞는 스트레칭</h1>
+            <h1 class="page-title">어디가 불편하세요?</h1>
+            <p class="muted-sm">불편한 부위를 고르면 관련 있을 수 있는 자세와 내 측정 결과, 생활 습관, 스트레칭을 같이 보여 드려요. 진단이 아닌 참고 정보예요.</p>
+          </div>
+          <div id="part-buttons" class="part-buttons"></div>
+          <div id="part-result" class="card part-result" hidden></div>
+        </section>
+
+        <section class="stack-16">
+          <div>
+            <h2 class="section-title">나에게 맞는 스트레칭</h2>
             <p class="muted-sm" id="guide-desc">스트레칭을 불러오는 중이에요.</p>
           </div>
           <div id="guide-list" class="grid-2"></div>
+        </section>
+
+        <section class="stack-16">
+          <div>
+            <h2 class="section-title">따라 하기 좋은 추천 영상</h2>
+            <p class="muted-sm">위 스트레칭과 관련된 영상만 골랐어요. 누르면 서울아산병원 건강TV에서 열려요.</p>
+          </div>
+          <div id="video-list" class="grid-3"></div>
         </section>
 
         <section class="stack-16">
@@ -344,16 +382,15 @@
           <img src="asset/logo.svg" alt="" width="40" height="40">
           <span>Pose<em>Ai</em></span>
         </a>
-        <div class="center"><h1 class="page-title">로그인</h1><p class="muted-sm">로그인하면 다른 기기에서도 내 기록을 볼 수 있어요.</p></div>
+        <div class="center"><h1 class="page-title">로그인</h1><p class="muted-sm">아이디만 입력하면 돼요. 다른 기기에서도 내 기록을 볼 수 있어요.</p></div>
         <div class="auth-tabs"><a href="#login" class="active">로그인</a><a href="#signup">회원가입</a></div>
         <form id="login-form" class="stack-16">
-          <label class="field">아이디<input type="text" id="login-id" placeholder="아이디를 입력해 주세요" autocomplete="username"></label>
-          <label class="field">비밀번호<input type="password" id="login-pw" placeholder="비밀번호를 입력해 주세요" autocomplete="current-password"></label>
+          <label class="field">아이디<input type="text" id="login-id" placeholder="가입할 때 만든 아이디" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
           <button type="submit" class="btn btn-primary btn-block">로그인</button>
           <p class="form-msg" role="status"></p>
         </form>
         <p class="center muted-sm">처음이에요? <a href="#signup"><b>회원가입</b></a></p>
-        <ul class="info-list"><li>저장되는 건 날짜, 각도, 점수 숫자뿐이에요</li><li>영상과 사진은 로그인해도 저장하지 않아요</li></ul>
+        <ul class="info-list"><li>저장되는 건 날짜, 각도, 점수 숫자뿐이에요</li><li>영상과 사진은 로그인해도 저장하지 않아요</li><li>비밀번호가 없어서 아이디를 아는 사람은 내 기록을 볼 수 있어요</li></ul>
         <a href="#history" class="btn-text center">로그인 없이 계속 쓰기</a>
       </div>
     </section>
@@ -365,13 +402,12 @@
           <img src="asset/logo.svg" alt="" width="40" height="40">
           <span>Pose<em>Ai</em></span>
         </a>
-        <div class="center"><h1 class="page-title">회원가입</h1><p class="muted-sm">이메일 없이 아이디만 있으면 돼요.</p></div>
+        <div class="center"><h1 class="page-title">회원가입</h1><p class="muted-sm">아이디랑 닉네임만 있으면 돼요.</p></div>
         <div class="auth-tabs"><a href="#login">로그인</a><a href="#signup" class="active">회원가입</a></div>
         <form id="signup-form" class="stack-16">
-          <label class="field">아이디<input type="text" id="signup-id" placeholder="영문·숫자 4~12자" autocomplete="username"></label>
-          <label class="field">닉네임<input type="text" id="signup-nick" placeholder="리포트랑 헤더에 보여요 (예: 유진)"></label>
-          <label class="field">비밀번호<input type="password" id="signup-pw" placeholder="6자 이상" autocomplete="new-password"></label>
-          <label class="field">비밀번호 확인<input type="password" id="signup-pw2" placeholder="한 번 더 입력해 주세요" autocomplete="new-password"></label>
+          <label class="field">아이디<input type="text" id="signup-id" placeholder="영문·숫자·_ 3~20자 (예: yujin_0301)" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+          <label class="field">닉네임<input type="text" id="signup-nick" placeholder="헤더랑 리포트에 보여요 (예: 유진)" maxlength="12" required></label>
+          <p class="muted-sm">다른 사람이 쉽게 짐작하지 못하는 아이디로 정해 주세요.</p>
           <button type="submit" class="btn btn-primary btn-block">가입하고 시작하기</button>
           <p class="form-msg" role="status"></p>
         </form>
@@ -384,6 +420,6 @@
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=19"></script>
+  <script type="module" src="js/app.js?v=24"></script>
 </body>
 </html>

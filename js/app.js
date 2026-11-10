@@ -29,8 +29,12 @@ const criteriaReady = fetch('data/criteria.json')
     console.error('criteria.json을 불러오지 못했어요. Live Server나 배포 주소로 열었는지 확인하세요.', err);
   });
 
+// 값이 있는지 (예전 기록이나 인식 안 된 항목은 null)
+const hasValue = v => v !== null && v !== undefined && !Number.isNaN(v);
+
 // 단계 판단: 양호 / 주의 / 확인 권장
 function getLevel(key, angle) {
+  if (!hasValue(angle)) return { text: '측정 안 됨', cls: 'none' };
   const c = CRITERIA[key];
   const a = Math.abs(angle);
   if (a < c.good) return { text: '양호', cls: 'good' };
@@ -44,16 +48,17 @@ function getItemScore(key, angle) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-// 종합 점수 = 3개 항목 평균
+// 종합 점수 = 측정된 항목 평균 (criteria.json 항목 수만큼)
 function getTotalScore(result) {
-  const keys = Object.keys(CRITERIA);
+  const keys = Object.keys(CRITERIA).filter(k => hasValue(result[k]));
+  if (keys.length === 0) return 0;
   const sum = keys.reduce((acc, k) => acc + getItemScore(k, result[k]), 0);
   return Math.round(sum / keys.length);
 }
 
 // ===== LocalStorage =====
-// 기록 형식: { date: '2026-11-03', neck: 18.4, shoulder: -2.7, pelvis: 1.9, score: 82 }
-// shoulder, pelvis는 + 면 오른쪽 낮음, - 면 왼쪽 낮음
+// 기록 형식: { date: '2026-11-09', neck: 18.4, shoulder: -2.7, trunk: 1.2, pelvis: 1.9, knee: 4.0, score: 82 }
+// shoulder, pelvis: + 오른쪽 낮음, - 왼쪽 낮음 / trunk: + 오른쪽으로 쏠림 / knee: + O다리 경향(무릎이 바깥), - X다리 경향(안쪽)
 const RECORD_KEY = 'poseai_records';
 const LATEST_KEY = 'poseai_latest';
 
@@ -71,8 +76,11 @@ function getRecords() {
 }
 function saveRecord(record) {
   const records = getRecords();
-  records.push(record);
+  const rec = { ...record, savedAt: record.savedAt || new Date().toISOString() };
+  records.push(rec);
   localStorage.setItem(RECORD_KEY, JSON.stringify(records));
+  // 로그인 중이면 구글 시트에도 저장 (8. 계정 부분에서 받음)
+  document.dispatchEvent(new CustomEvent('recordsaved', { detail: rec }));
 }
 
 
@@ -81,7 +89,7 @@ function saveRecord(record) {
    ===================================================================== */
 // ===== ② 촬영·측정 (#measure) =====
 // 1. 웹캠 켜고 MediaPipe 좌표를 점·선으로 표시, 실시간 각도 표시
-// 2. [정면 측정 시작] → 3초 카운트다운 → 5초 동안 어깨·골반 각도 평균
+// 2. [정면 측정 시작] → 3초 카운트다운 → 5초 동안 어깨·상체 쏠림·골반·무릎 각도 평균
 // 3. [측면 측정 시작] → 3초 카운트다운 → 5초 동안 거북목 각도 평균
 // 4. 종합 점수 계산 → saveLatest() → #report 로 이동
 
@@ -93,7 +101,9 @@ const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmark
 const P = {
   L_EAR: 7, R_EAR: 8,
   L_SHOULDER: 11, R_SHOULDER: 12,
-  L_HIP: 23, R_HIP: 24
+  L_HIP: 23, R_HIP: 24,
+  L_KNEE: 25, R_KNEE: 26,
+  L_ANKLE: 27, R_ANKLE: 28
 };
 const MIN_VIS = 0.5;      // 이보다 낮으면 신뢰도 낮은 좌표로 보고 제외
 const MIN_FRAMES = 30;    // 5초 동안 유효한 프레임이 이보다 적으면 다시 측정
@@ -116,7 +126,7 @@ let lastTime = -1;
 let current = null;      // 지금 프레임 각도
 let samples = null;      // 5초 측정 중일 때 모으는 값
 let phase = 'front';     // 'front' → 'side'
-let frontResult = null;  // 정면 측정 결과 { shoulder, pelvis }
+let frontResult = null;  // 정면 측정 결과 { shoulder, trunk, pelvis, knee }
 
 // ---------- 각도 계산 ----------
 // 좌표는 0~1 비율이라 화면 가로세로 비율을 곱해서 계산
@@ -137,12 +147,38 @@ function neckAngle(ear, shoulder) {
   return Math.atan2(dx, dy) * 180 / Math.PI;
 }
 
+// 상체 쏠림 (정면용): 골반 가운데 → 어깨 가운데 선이 수직선과 이루는 각도
+// + 면 사용자 기준 오른쪽으로 쏠림
+function trunkAngle(lSh, rSh, lHip, rHip) {
+  const w = video.videoWidth, h = video.videoHeight;
+  const toRight = Math.sign(rSh.x - lSh.x) || 1;          // 화면에서 사용자 오른쪽 방향
+  const shX = (lSh.x + rSh.x) / 2, shY = (lSh.y + rSh.y) / 2;
+  const hipX = (lHip.x + rHip.x) / 2, hipY = (lHip.y + rHip.y) / 2;
+  const dx = (shX - hipX) * w * toRight;
+  const dy = Math.abs(hipY - shY) * h;
+  return Math.atan2(dx, dy) * 180 / Math.PI;
+}
+
+// 무릎 정렬 (정면용, 다리 하나): 엉덩이→발목 직선에서 무릎이 벗어난 각도
+// + 면 무릎이 바깥(O다리 경향), - 면 안쪽(X다리 경향)
+function kneeAngle(hip, knee, ankle, midX) {
+  const w = video.videoWidth, h = video.videoHeight;
+  const t = (knee.y - hip.y) / ((ankle.y - hip.y) || 1e-6);
+  const lineX = hip.x + t * (ankle.x - hip.x);              // 무릎 높이에서 엉덩이→발목 선의 x
+  const outward = Math.sign(hip.x - midX) || 1;             // 몸 바깥쪽 방향
+  const off = (knee.x - lineX) * w * outward;
+  const upper = Math.hypot((knee.x - hip.x) * w, (knee.y - hip.y) * h);
+  const lower = Math.hypot((ankle.x - knee.x) * w, (ankle.y - knee.y) * h);
+  // 바깥으로 벗어난 거리로 위·아래 다리 각각 꺾인 각도를 구해 더함
+  return (Math.asin(Math.max(-1, Math.min(1, off / upper))) + Math.asin(Math.max(-1, Math.min(1, off / lower)))) * 180 / Math.PI;
+}
+
 function visible(...points) {
   return points.every(p => p && p.visibility > MIN_VIS);
 }
 
 function calcAngles(lm) {
-  const result = { shoulder: null, pelvis: null, neck: null };
+  const result = { shoulder: null, trunk: null, pelvis: null, knee: null, neck: null };
 
   if (visible(lm[P.L_SHOULDER], lm[P.R_SHOULDER])) {
     result.shoulder = tiltAngle(lm[P.L_SHOULDER], lm[P.R_SHOULDER]);
@@ -150,6 +186,15 @@ function calcAngles(lm) {
   if (visible(lm[P.L_HIP], lm[P.R_HIP])) {
     result.pelvis = tiltAngle(lm[P.L_HIP], lm[P.R_HIP]);
   }
+  if (visible(lm[P.L_SHOULDER], lm[P.R_SHOULDER], lm[P.L_HIP], lm[P.R_HIP])) {
+    result.trunk = trunkAngle(lm[P.L_SHOULDER], lm[P.R_SHOULDER], lm[P.L_HIP], lm[P.R_HIP]);
+  }
+  // 무릎: 두 다리 중 보이는 다리만 평균
+  const midX = (lm[P.L_HIP].x + lm[P.R_HIP].x) / 2;
+  const legs = [[P.L_HIP, P.L_KNEE, P.L_ANKLE], [P.R_HIP, P.R_KNEE, P.R_ANKLE]]
+    .filter(([a, b, c]) => visible(lm[a], lm[b], lm[c]))
+    .map(([a, b, c]) => kneeAngle(lm[a], lm[b], lm[c], midX));
+  if (legs.length) result.knee = legs.reduce((x, y) => x + y, 0) / legs.length;
 
   // 측면: 왼쪽·오른쪽 중 더 잘 보이는 쪽 사용
   const leftVis = Math.min(lm[P.L_EAR].visibility, lm[P.L_SHOULDER].visibility);
@@ -173,10 +218,10 @@ function setPhase(next) {
   stepSide.classList.toggle('active', phase === 'side');
   if (phase === 'front') {
     startBtn.textContent = '정면 측정 시작';
-    guideEl.textContent = '정면을 바라보고 평소처럼 서 주세요. 머리부터 골반까지 보이게요.';
+    guideEl.textContent = '정면을 바라보고 평소처럼 서 주세요. 머리부터 발목까지 다 보이게요. (어깨·상체·골반·무릎)';
   } else {
     startBtn.textContent = '측면 측정 시작';
-    guideEl.textContent = '옆으로 돌아서 평소처럼 서 주세요. 귀와 어깨가 잘 보이게요.';
+    guideEl.textContent = '옆으로 돌아서 평소처럼 서 주세요. 귀와 어깨가 잘 보이게요. (거북목)';
   }
 }
 
@@ -261,6 +306,8 @@ function loop() {
       document.getElementById('live-shoulder').textContent = fmt(current.shoulder);
       document.getElementById('live-pelvis').textContent = fmt(current.pelvis);
       document.getElementById('live-neck').textContent = fmt(current.neck);
+      document.getElementById('live-trunk').textContent = fmt(current.trunk);
+      document.getElementById('live-knee').textContent = fmt(current.knee);
 
       if (!samples) statusEl.textContent = '잘 인식되고 있어요';
     } else {
@@ -311,8 +358,15 @@ async function onStart() {
       statusEl.textContent = '어깨나 골반이 잘 안 보였어요. 한 걸음 뒤로 가서 다시 해 주세요';
       return;
     }
-    frontResult = { shoulder: round1(shoulder), pelvis: round1(pelvis) };
-    statusEl.textContent = `정면 완료 · 어깨 ${fmt(shoulder)} · 골반 ${fmt(pelvis)}`;
+    const trunk = average(list, 'trunk');
+    const knee = average(list, 'knee');    // 발목이 화면에 안 나오면 null일 수 있음
+    frontResult = {
+      shoulder: round1(shoulder),
+      trunk: trunk === null ? null : round1(trunk),
+      pelvis: round1(pelvis),
+      knee: knee === null ? null : round1(knee)
+    };
+    statusEl.textContent = `정면 완료 · 어깨 ${fmt(shoulder)} · 상체 ${fmt(trunk)} · 골반 ${fmt(pelvis)} · 무릎 ${fmt(knee)}`;
     setPhase('side');
     return;
   }
@@ -328,8 +382,7 @@ async function onStart() {
   const result = {
     date: new Date().toISOString().slice(0, 10),
     neck: round1(neck),
-    shoulder: frontResult.shoulder,
-    pelvis: frontResult.pelvis
+    ...frontResult
   };
   result.score = getTotalScore(result);   // common.js
   saveLatest(result);                      // common.js
@@ -359,20 +412,30 @@ document.addEventListener('pagechange', e => {
 // 종합 점수, 지난번과 비교, 항목별 각도·단계를 보여주고 [기록 저장]으로 saveRecord()
 
 (function () {
-  const KEYS = ['neck', 'shoulder', 'pelvis'];   // 이름·설명은 data/criteria.json
+  const KEYS = () => Object.keys(CRITERIA);   // 항목·이름·설명은 data/criteria.json
 
   const $ = id => document.getElementById(id);
   const saveBtn = $('save-btn');
 
-  // 어깨·골반 기울어진 방향 (+ 오른쪽 낮음, - 왼쪽 낮음)
+  // 기울어진 방향 (+ 오른쪽 낮음, - 왼쪽 낮음)
   function direction(key, v) {
     if (key === 'neck') return '';
-    if (Math.abs(v) < 0.5) return '거의 수평';
+    if (Math.abs(v) < 0.5) return key === 'knee' ? '거의 일직선' : '거의 수평';
+    if (key === 'trunk') return v > 0 ? '오른쪽으로 쏠림' : '왼쪽으로 쏠림';
+    if (key === 'knee') return v > 0 ? 'O다리 경향' : 'X다리 경향';
     return v > 0 ? '오른쪽 낮음' : '왼쪽 낮음';
   }
 
   function cardHTML(key, value) {
     const c = CRITERIA[key];
+    if (!hasValue(value)) {
+      return `
+      <article class="card result-card">
+        <div class="row-between"><h2 class="card-title">${c.name}</h2><i class="badge none">측정 안 됨</i></div>
+        <strong class="result-value">--°</strong>
+        <p class="muted-sm">${c.view} · ${c.desc}<br>${key === 'knee' ? '무릎·발목이 화면에 안 나오면 측정되지 않아요. 2.5~3m 떨어져 서 주세요.' : '몸이 화면에 다 안 나오면 측정되지 않아요.'}</p>
+      </article>`;
+    }
     const level = getLevel(key, value);
     const dir = direction(key, value);
     const rest = Math.max(2, c.warn - c.good);
@@ -417,14 +480,49 @@ document.addEventListener('pagechange', e => {
 
     // 단계별 개수
     const count = { good: 0, warn: 0, check: 0 };
-    KEYS.forEach(k => count[getLevel(k, latest[k]).cls]++);
+    KEYS().filter(k => hasValue(latest[k])).forEach(k => count[getLevel(k, latest[k]).cls]++);
     $('level-count').innerHTML =
       `<i class="badge good">양호 ${count.good}</i><i class="badge warn">주의 ${count.warn}</i><i class="badge check">확인 권장 ${count.check}</i>`;
 
-    $('result-list').innerHTML = KEYS.map(k => cardHTML(k, latest[k])).join('');
+    $('result-list').innerHTML = KEYS().map(k => cardHTML(k, latest[k])).join('');
+
+    renderCombos(latest);
 
     saveBtn.disabled = !!latest.saved;
     saveBtn.textContent = latest.saved ? '저장 완료' : '기록 저장';
+  }
+
+  // ----- 같이 나타난 패턴: 주의 이상인 항목끼리 묶어서 설명 -----
+  let combos = null;
+  fetch('data/combos.json').then(r => r.json()).then(d => { combos = d; if (location.hash === '#report') render(); }).catch(() => {});
+
+  function renderCombos(latest) {
+    const box = $('combo-list');
+    const wrap = $('combo-section');
+    if (!box || !combos || !latest) { if (wrap) wrap.hidden = true; return; }
+    const bad = k => hasValue(latest[k]) && ['warn', 'check'].includes(getLevel(k, latest[k]).cls);
+    const hits = combos.rules.filter(r => r.keys.every(bad));
+    const badCount = KEYS().filter(bad).length;
+
+    const cards = hits.map(r => `
+      <article class="card combo-card">
+        <div class="combo-keys">${r.keys.map(k => `<i class="badge ${getLevel(k, latest[k]).cls}">${CRITERIA[k].name} ${Math.abs(latest[k]).toFixed(1)}°</i>`).join('<span aria-hidden="true">+</span>')}</div>
+        <h3>${r.title}</h3>
+        <p><b>왜 같이 보나요?</b> ${r.why}</p>
+        <p class="muted">${r.habit}</p>
+        <ul class="part-list">${r.care.map(t => `<li>${t}</li>`).join('')}</ul>
+      </article>`);
+    if (badCount >= combos.many.min) {
+      cards.push(`
+      <article class="card combo-card combo-many">
+        <h3>${combos.many.title}</h3>
+        <p>${combos.many.why}</p>
+        <ul class="part-list">${combos.many.care.map(t => `<li>${t}</li>`).join('')}</ul>
+      </article>`);
+    }
+    wrap.hidden = cards.length === 0;
+    $('combo-notice').textContent = combos.notice;
+    box.innerHTML = cards.join('');
   }
 
   saveBtn.addEventListener('click', () => {
@@ -464,7 +562,7 @@ document.addEventListener('pagechange', e => {
     if (typeof Chart === 'undefined') return;   // Chart.js 못 불러왔을 때
     const byDate = [...records].sort((a, b) => a.date < b.date ? -1 : 1);
     const labels = byDate.map(r => r.date.slice(5).replace('-', '/'));
-    const values = byDate.map(r => Math.abs(r[key]));
+    const values = byDate.map(r => hasValue(r[key]) ? Math.abs(r[key]) : null);   // 예전 기록은 빈칸
     const good = CRITERIA[key].good;
 
     if (chart) chart.destroy();
@@ -474,7 +572,7 @@ document.addEventListener('pagechange', e => {
       data: {
         labels,
         datasets: [
-          { label: `${CRITERIA[key].name} 각도`, data: values, borderColor: '#1D5FD1', backgroundColor: '#1D5FD1', tension: 0.3, pointRadius: 5 },
+          { label: `${CRITERIA[key].name} 각도`, data: values, borderColor: '#1D5FD1', backgroundColor: '#1D5FD1', tension: 0.3, pointRadius: 5, spanGaps: true },
           { label: `양호 기준 ${good}°`, data: labels.map(() => good), borderColor: '#0E7C86', borderDash: [6, 6], pointRadius: 0 }
         ]
       },
@@ -508,7 +606,7 @@ document.addEventListener('pagechange', e => {
       li.style.cursor = 'pointer';
       li.innerHTML = `
         <b style="min-width:110px">${r.date}</b>
-        <span class="muted" style="flex:1">거북목 ${Math.abs(r.neck).toFixed(1)}° · 어깨 ${Math.abs(r.shoulder).toFixed(1)}° · 골반 ${Math.abs(r.pelvis).toFixed(1)}°</span>
+        <span class="muted" style="flex:1">${Object.keys(CRITERIA).filter(k => hasValue(r[k])).map(k => `${CRITERIA[k].name} ${Math.abs(r[k]).toFixed(1)}°`).join(' · ')}</span>
         <b style="font-size:20px">${r.score}점</b><span aria-hidden="true">›</span>`;
       // 상세보기: 그 기록을 리포트로 보여주기
       li.addEventListener('click', () => {
@@ -555,9 +653,19 @@ document.addEventListener('pagechange', e => {
   const descEl = document.getElementById('guide-desc');
   let guides = null;
 
-  function cardHTML(g, level) {
-    const c = CRITERIA[g.key];
-    const badge = level ? `<i class="badge ${level.cls}">${c.name} · ${level.text}</i>` : `<i class="badge good">${c.name}</i>`;
+  // 스트레칭 하나가 여러 항목(keys)에 도움 → 그중 가장 안 좋은 항목을 배지로
+  const RANK = { check: 3, warn: 2, good: 1, none: 0 };
+  function worstKey(g, levels) {
+    return g.keys.reduce((a, b) => (RANK[levels[b].cls] > RANK[levels[a].cls] ? b : a));
+  }
+
+  function cardHTML(g, levels) {
+    const key = levels ? worstKey(g, levels) : g.keys[0];
+    const c = CRITERIA[key];
+    const level = levels ? levels[key] : null;
+    const badge = level && level.cls !== 'none'
+      ? `<i class="badge ${level.cls}">${c.name} · ${level.text}</i>`
+      : `<i class="badge good">${g.keys.map(k => CRITERIA[k].name).join(' · ')}</i>`;
     const img = g.image ? `<img class="stretch-img" src="${g.image}" alt="${g.title} 동작">` : `<div class="stretch-img">동작 그림</div>`;
     return `
       <article class="card stretch-card">
@@ -568,31 +676,119 @@ document.addEventListener('pagechange', e => {
           <p>${g.how}</p>
           <span class="muted-sm">${g.count}${g.caution ? ' · ' + g.caution : ''}</span>
           ${g.source ? `<span class="muted-sm">출처: ${g.sourceUrl ? `<a href="${g.sourceUrl}" target="_blank" rel="noopener">${g.source}</a>` : g.source}</span>` : ''}
+          ${g.video ? `<a class="video-btn" href="${g.video.url}" target="_blank" rel="noopener">▶ 관련 영상 보기</a>` : ''}
         </div>
       </article>`;
+  }
+
+  // ----- 불편한 부위 체크 (data/body-parts.json) -----
+  // 부위를 고르면: 관련 있을 수 있는 자세 → 내 측정값 → 생활 습관 → 스트레칭 → 병원 찾기
+  // 병명이나 원인은 말하지 않고 "자세와의 관련성"만 안내
+  let parts = null;
+  let selectedPart = null;
+  const partBtns = document.getElementById('part-buttons');
+  const partBox = document.getElementById('part-result');
+
+  function renderParts() {
+    if (!parts || !partBtns) return;
+    partBtns.innerHTML = parts.parts.map(p => `
+      <button type="button" class="part-btn${p.id === selectedPart ? ' active' : ''}" data-id="${p.id}" aria-pressed="${p.id === selectedPart}">
+        <b>${p.name}</b><span>${p.feel}</span>
+      </button>`).join('');
+    partBtns.querySelectorAll('.part-btn').forEach(b => b.addEventListener('click', () => {
+      selectedPart = selectedPart === b.dataset.id ? null : b.dataset.id;
+      renderParts();
+    }));
+
+    const p = parts.parts.find(x => x.id === selectedPart);
+    if (!p) { partBox.hidden = true; return; }
+    partBox.hidden = false;
+
+    const latest = getLatest();
+    const mine = p.keys.map(k => {
+      const c = CRITERIA[k];
+      if (!latest || !hasValue(latest[k])) return `<li><span>${c.name}</span><span class="muted-sm">아직 측정 안 됨</span></li>`;
+      const lv = getLevel(k, latest[k]);
+      return `<li><span>${c.name}</span><span><b>${Math.abs(latest[k]).toFixed(1)}°</b> <i class="badge ${lv.cls}">${lv.text}</i></span></li>`;
+    }).join('');
+    const stretches = guides.filter(g => g.keys.some(k => p.keys.includes(k))).map(g => `<li>${g.title}</li>`).join('');
+
+    partBox.innerHTML = `
+      <div class="part-grid">
+        <div class="stack-8">
+          <h3>${p.name}: ${p.feel}</h3>
+          <p>${p.relation}</p>
+          <p class="muted-sm">${parts.notice}</p>
+          <h4>내 측정 결과 중 관련 항목</h4>
+          <ul class="part-mine">${mine}</ul>
+          ${latest ? '' : '<a href="#measure" class="btn btn-outline">측정하고 내 결과 보기</a>'}
+        </div>
+        <div class="stack-8">
+          <h4>생활 습관 팁</h4>
+          <ul class="part-list">${p.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+          <h4>도움 되는 스트레칭</h4>
+          <ul class="part-list">${stretches}</ul>
+        </div>
+      </div>
+      <div class="part-alert">
+        <b>이럴 땐 측정보다 진료가 먼저예요</b>
+        <ul>${parts.redFlags.map(t => `<li>${t}</li>`).join('')}</ul>
+        <button type="button" class="btn btn-primary" id="part-hosp">${p.deptName} 병원 찾기</button>
+      </div>`;
+
+    document.getElementById('part-hosp').addEventListener('click', () => {
+      const dept = document.getElementById('dept-select');
+      if (dept) dept.value = p.dept;
+      document.getElementById('hospital')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  fetch('data/body-parts.json').then(r => r.json()).then(d => { parts = d; render(); }).catch(() => {});
+
+  // 추천 영상: 지금 보여주는 스트레칭과 관련된 영상만 (같은 영상은 한 번만)
+  function renderVideos(shown) {
+    const box = document.getElementById('video-list');
+    if (!box) return;
+    const seen = new Set();
+    const vids = shown.filter(g => g.video && !seen.has(g.video.url) && seen.add(g.video.url)).map(g => ({ ...g.video, keys: g.keys }));
+    box.innerHTML = vids.map(v => `
+      <a class="card video-card" href="${v.url}" target="_blank" rel="noopener">
+        <span class="video-thumb" aria-hidden="true">▶</span>
+        <span class="stack-8">
+          <i class="badge good">${v.keys.map(k => CRITERIA[k].name).join(' · ')}</i>
+          <b>${v.title}</b>
+          <span class="muted-sm">${v.covers}</span>
+          <span class="muted-sm">${v.by} · 서울아산병원 건강TV</span>
+        </span>
+      </a>`).join('');
   }
 
   function render() {
     if (!guides || !CRITERIA) return;
     const latest = getLatest();
+    renderParts();
 
     if (!latest) {
       descEl.textContent = '아직 측정 결과가 없어서 전체 스트레칭을 보여 드려요. 측정하면 내 결과에 맞는 것만 골라 드려요.';
       listEl.innerHTML = guides.map(g => cardHTML(g, null)).join('');
+      renderVideos(guides);
       return;
     }
 
     // 주의 이상인 항목만
     const levels = {};
     Object.keys(CRITERIA).forEach(k => { levels[k] = getLevel(k, latest[k]); });
-    const need = guides.filter(g => levels[g.key].cls !== 'good');
+    const bad = k => levels[k].cls === 'warn' || levels[k].cls === 'check';
+    const need = guides.filter(g => g.keys.some(bad));
 
     if (need.length === 0) {
       descEl.textContent = '최근 측정에서 모두 양호했어요. 지금 자세를 유지하는 데 도움이 되는 스트레칭이에요.';
-      listEl.innerHTML = guides.map(g => cardHTML(g, levels[g.key])).join('');
+      listEl.innerHTML = guides.map(g => cardHTML(g, levels)).join('');
+      renderVideos(guides);
     } else {
       descEl.textContent = `최근 측정(${latest.date})에서 주의 이상이 나온 항목만 보여 드려요.`;
-      listEl.innerHTML = need.map(g => cardHTML(g, levels[g.key])).join('');
+      listEl.innerHTML = need.map(g => cardHTML(g, levels)).join('');
+      renderVideos(need);
     }
   }
 
@@ -732,10 +928,11 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
   function measureContext() {
     const latest = getLatest();
     if (!latest || !CRITERIA) return '사용자는 아직 측정하지 않았어.';
-    const parts = Object.keys(CRITERIA).map(k => {
+    const parts = Object.keys(CRITERIA).filter(k => hasValue(latest[k])).map(k => {
       const v = latest[k];
       const lv = getLevel(k, v).text;
-      const dir = k === 'neck' ? '' : (v > 0 ? ', 오른쪽 낮음' : v < 0 ? ', 왼쪽 낮음' : '');
+      const dir = k === 'neck' ? '' : k === 'trunk' ? (v > 0 ? ', 오른쪽으로 쏠림' : ', 왼쪽으로 쏠림')
+        : k === 'knee' ? (v > 0 ? ', O다리 경향' : ', X다리 경향') : (v > 0 ? ', 오른쪽 낮음' : v < 0 ? ', 왼쪽 낮음' : '');
       return `${CRITERIA[k].name} ${Math.abs(v).toFixed(1)}°(${lv}${dir})`;
     });
     return `사용자의 최근 측정(${latest.date}): ${parts.join(', ')}, 종합 점수 ${latest.score}점.`;
@@ -912,13 +1109,180 @@ window.addEventListener('DOMContentLoaded', () => criteriaReady.finally(showPage
     }
   }));
 
-  // 로그인 기능은 아직 준비 중 → 누르면 안내만
-  ['login-form', 'signup-form'].forEach(id => {
-    const form = document.getElementById(id);
-    if (!form) return;
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      form.querySelector('.form-msg').textContent = '로그인 기능은 준비 중이에요. 지금은 로그인 없이 측정과 기록 저장을 쓸 수 있어요.';
-    });
+})();
+
+
+/* =====================================================================
+   8. 회원가입·로그인 (아이디 + 닉네임) → 기록은 구글 시트에 저장
+   - 구글 시트에 붙인 Apps Script(apps-script/Code.gs)가 저장소 역할
+   - 비밀번호 없이 아이디로만 로그인 (과제용 간단 버전)
+   - 로그인 안 해도 측정·기록은 이 브라우저(LocalStorage)에 그대로 저장됨
+   ===================================================================== */
+const SHEET_URL = '';   // Apps Script 웹 앱 URL 넣기. 예: 'https://script.google.com/macros/s/xxxx/exec'
+const USER_KEY = 'poseai_user';
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch (e) { return null; }
+}
+
+// Apps Script는 Content-Type을 text/plain으로 보내야 브라우저가 막지 않음(CORS 사전 요청 없음)
+async function sheetApi(action, data = {}) {
+  if (!SHEET_URL) throw new Error('아직 구글 시트가 연결되지 않았어요');
+  const res = await fetch(SHEET_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, ...data })
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || '요청에 실패했어요');
+  return json;
+}
+
+(() => {
+  const $ = id => document.getElementById(id);
+
+  // ----- 화면 표시: 헤더, 사이드바, 홈 미리보기, 기록 안내 -----
+  function updateUI() {
+    const user = getUser();
+    const loginLink = $('login-link');
+    loginLink.textContent = user ? `${user.nickname}님` : '로그인';
+    loginLink.href = user ? '#history' : '#login';
+
+    $('sidebar-avatar').textContent = user ? user.nickname.slice(0, 1) : '?';
+    $('sidebar-name').textContent = user ? `${user.nickname}님` : '로그인이 필요해요';
+    $('sidebar-sub').textContent = user ? `아이디 ${user.id} · 기록이 구글 시트에 저장돼요` : '지금은 게스트로 이용 중이에요';
+    $('sidebar-login').hidden = !!user;
+    $('sidebar-logout').hidden = !user;
+
+    $('sync-title').textContent = user ? `${user.nickname}님의 기록은 구글 시트에 저장돼요` : '기록 동기화는 로그인이 필요해요';
+    $('sync-text').textContent = user
+      ? '같은 아이디로 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.'
+      : '지금 기록은 이 브라우저에만 임시로 저장돼요. 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.';
+    $('sync-btn').hidden = !!user;
+
+    renderPreview(user);
+  }
+
+  // 홈 리포트 카드: 로그인하면 내 최근 결과, 아니면 잠금
+  function renderPreview(user) {
+    const card = $('preview-card');
+    if (!card || !CRITERIA) return;
+    const latest = getLatest();
+    if (!user) return;   // 잠금 화면(HTML 기본)을 그대로 둠
+    card.classList.remove('locked');
+    if (!latest) {
+      card.innerHTML = `
+        <div class="row-between"><span class="muted-sm">${user.nickname}님의 체형 리포트</span></div>
+        <div class="lock-msg"><b>아직 측정 기록이 없어요</b><a href="#measure" class="btn btn-primary btn-block">첫 측정 하기</a></div>`;
+      return;
+    }
+    const rows = Object.keys(CRITERIA).map(k => {
+      const v = latest[k];
+      if (!hasValue(v)) return `<div class="preview-row"><span>${CRITERIA[k].name}</span><span class="muted-sm">측정 안 됨</span></div>`;
+      const lv = getLevel(k, v);
+      return `<div class="preview-row"><span>${CRITERIA[k].name}</span><span><b>${Math.abs(v).toFixed(1)}°</b> <i class="badge ${lv.cls}">${lv.text}</i></span></div>`;
+    }).join('');
+    card.innerHTML = `
+      <div class="row-between"><span class="muted-sm">${user.nickname}님의 체형 리포트</span><span class="muted-sm">${latest.date}</span></div>
+      <div class="preview-score"><strong>${latest.score}</strong><span>점</span></div>
+      ${rows}
+      <a href="#report" class="btn btn-outline btn-block">리포트 자세히 보기</a>`;
+  }
+
+  // ----- 동기화: 이 브라우저 기록 ↔ 구글 시트 -----
+  async function sync(user) {
+    // 1) 이 브라우저에만 있던 기록을 시트로 올리기 (예전 기록엔 savedAt이 없어서 만들어 줌)
+    const local = getRecords().map((r, i) => ({ ...r, savedAt: r.savedAt || `${r.date}T00:00:0${i % 10}.local${i}` }));
+    if (local.length) await sheetApi('saveRecords', { id: user.id, records: local });
+    // 2) 시트에 있는 내 기록 전부 받아서 이 브라우저와 합치기 (savedAt 기준 중복 제거)
+    const { records } = await sheetApi('getRecords', { id: user.id });
+    const map = new Map();
+    [...local, ...records].forEach(r => map.set(String(r.savedAt), r));
+    const merged = [...map.values()].sort((a, b) => String(a.savedAt).localeCompare(String(b.savedAt)));
+    localStorage.setItem(RECORD_KEY, JSON.stringify(merged));
+    // 최근 결과가 없으면 시트의 마지막 기록으로
+    if (!getLatest() && merged.length) saveLatest({ ...merged[merged.length - 1], saved: true });
+  }
+
+  function refreshPage() {
+    const page = location.hash.replace('#', '') || 'home';
+    document.dispatchEvent(new CustomEvent('pagechange', { detail: page }));
+  }
+
+  async function afterLogin(user, msgEl) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    msgEl.textContent = '기록을 불러오는 중이에요...';
+    try {
+      await sync(user);
+    } catch (err) {
+      console.error(err);
+    }
+    updateUI();
+    location.hash = '#history';
+  }
+
+  // ----- 회원가입 -----
+  const signupForm = $('signup-form');
+  signupForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = signupForm.querySelector('.form-msg');
+    const id = $('signup-id').value.trim().toLowerCase();
+    const nickname = $('signup-nick').value.trim();
+    if (!/^[a-z0-9_]{3,20}$/.test(id)) { msg.textContent = '아이디는 영문·숫자·_ 3~20자로 써 주세요.'; return; }
+    if (!nickname) { msg.textContent = '닉네임을 입력해 주세요.'; return; }
+    msg.textContent = '가입하는 중이에요...';
+    try {
+      const { user } = await sheetApi('signup', { id, nickname });
+      await afterLogin(user, msg);
+      signupForm.reset();
+      msg.textContent = '';
+    } catch (err) {
+      msg.textContent = err.message;
+    }
+  });
+
+  // ----- 로그인 -----
+  const loginForm = $('login-form');
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = loginForm.querySelector('.form-msg');
+    const id = $('login-id').value.trim().toLowerCase();
+    if (!id) { msg.textContent = '아이디를 입력해 주세요.'; return; }
+    msg.textContent = '로그인하는 중이에요...';
+    try {
+      const { user } = await sheetApi('login', { id });
+      await afterLogin(user, msg);
+      loginForm.reset();
+      msg.textContent = '';
+    } catch (err) {
+      msg.textContent = err.message;
+    }
+  });
+
+  // ----- 로그아웃: 이 브라우저에 있던 내 기록도 지움 (기록은 구글 시트에 남아 있음) -----
+  $('sidebar-logout').addEventListener('click', () => {
+    if (!getUser()) return;
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(RECORD_KEY);
+    localStorage.removeItem(LATEST_KEY);
+    location.hash = '#home';
+    location.reload();
+  });
+
+  // ----- 기록 저장할 때 로그인 중이면 시트에도 저장 -----
+  document.addEventListener('recordsaved', e => {
+    const user = getUser();
+    if (!user || !SHEET_URL) return;
+    sheetApi('saveRecords', { id: user.id, records: [e.detail] }).catch(err => console.error('시트 저장 실패', err));
+  });
+
+  // 화면 바뀔 때마다 표시 갱신 (홈 카드 등)
+  document.addEventListener('pagechange', updateUI);
+
+  // 처음 들어왔을 때 로그인 상태면 시트에서 최신 기록 받아오기
+  criteriaReady.finally(() => {
+    updateUI();
+    const user = getUser();
+    if (user && SHEET_URL) sync(user).then(refreshPage).catch(err => console.error(err));
   });
 })();

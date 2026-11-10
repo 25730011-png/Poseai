@@ -272,3 +272,43 @@ body.no-scroll { overflow: hidden; }
 .lock-msg { display: flex; flex-direction: column; gap: 10px; text-align: center; margin-top: 4px; padding-top: 14px; border-top: 1px dashed var(--line); font-size: 14px; color: var(--ink); }
 .form-msg { font-size: 13px; color: var(--blue); text-align: center; min-height: 20px; margin: 0; }
 @media (max-width: 640px) { .menu-btn { margin-right: 0; width: 36px; height: 36px; } }
+
+/* 추천 영상 */
+.video-btn { align-self: flex-start; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--blue); background: var(--sky-soft); border-radius: 999px; padding: 6px 14px; text-decoration: none; }
+.video-btn:hover { background: var(--card-soft); color: var(--blue); }
+.video-card { flex-direction: row; gap: 16px; align-items: flex-start; text-decoration: none; color: var(--ink); transition: border-color .15s; }
+.video-card:hover { border-color: var(--blue); color: var(--ink); }
+.video-thumb { flex: 0 0 64px; height: 64px; border-radius: 14px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+
+/* 측정 항목 5개 */
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.grid-5 .card { padding: 18px; }
+@media (max-width: 960px) { .grid-5 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); } }
+.badge.none { background: var(--card-soft); color: var(--muted); }
+
+/* 불편한 부위 체크 */
+.part-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+@media (max-width: 900px) { .part-buttons { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
+.part-btn { display: flex; flex-direction: column; gap: 4px; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; color: var(--ink); transition: border-color .15s, background .15s; }
+.part-btn b { font-size: 17px; }
+.part-btn span { font-size: 13px; color: var(--muted); }
+.part-btn:hover { border-color: var(--blue); }
+.part-btn.active { border-color: var(--blue); background: var(--sky-soft); box-shadow: inset 0 0 0 1px var(--blue); }
+.part-result { gap: 20px; }
+.part-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.part-result h3 { font-size: 20px; margin: 0; }
+.part-result h4 { font-size: 15px; margin: 10px 0 0; color: var(--navy); }
+.part-mine { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.part-mine li { display: flex; justify-content: space-between; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.part-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.part-alert { background: #FFF4EF; border: 1px solid #F3C9B8; border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+.part-alert b { color: var(--check); }
+.part-alert ul { margin: 0; padding-left: 20px; font-size: 14px; }
+.part-alert .btn { align-self: flex-start; }
+
+/* 같이 나타난 자세 패턴 */
+.combo-card { gap: 10px; }
+.combo-card h3 { margin: 0; font-size: 19px; }
+.combo-card p { margin: 0; }
+.combo-keys { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 700; color: var(--muted); }
+.combo-many { background: var(--sky-soft); border-color: var(--sky); }
