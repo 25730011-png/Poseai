@@ -1412,6 +1412,19 @@ function authMessage(err) {
     if (!reduce && !paused && onHome && !document.hidden) go(index + 1);
   }, 7000);
 
+  // 마우스를 움직이면 배경 골격선이 살짝 따라 움직임 (입체감)
+  const skel = hero.querySelector('.hero-skel');
+  if (skel && !reduce) {
+    hero.addEventListener('mousemove', e => {
+      const r = hero.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      skel.style.setProperty('--px', `${(-x * 24).toFixed(1)}px`);
+      skel.style.setProperty('--py', `${(-y * 16).toFixed(1)}px`);
+    });
+    hero.addEventListener('mouseleave', () => { skel.style.setProperty('--px', '0px'); skel.style.setProperty('--py', '0px'); });
+  }
+
   // 슬라이드 2의 부위 버튼 → 가이드에서 그 부위가 열린 상태로
   document.querySelectorAll('.pick-btn').forEach(a => a.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('selectpart', { detail: a.dataset.part }));
@@ -1421,4 +1434,30 @@ function authMessage(err) {
   document.querySelectorAll('.topbar a[data-scroll]').forEach(a => a.addEventListener('click', () => {
     setTimeout(() => document.getElementById(a.dataset.scroll)?.scrollIntoView({ behavior: 'smooth' }), 150);
   }));
+})();
+
+
+/* =====================================================================
+   10. 맨 위로 / 맨 아래로 버튼
+   - 페이지가 길면 항상 오른쪽 아래에 보임 (짧은 화면에선 숨김)
+   - 맨 위면 ↑, 맨 아래면 ↓ 버튼이 흐려짐
+   ===================================================================== */
+(() => {
+  const nav = document.getElementById('scroll-nav');
+  const up = document.getElementById('to-top');
+  const down = document.getElementById('to-bottom');
+  if (!nav) return;
+  const update = () => {
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    nav.classList.toggle('show', max > 300);
+    up.disabled = y < 10;
+    down.disabled = y > max - 10;
+  };
+  up.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  down.addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  document.addEventListener('pagechange', () => setTimeout(update, 50));
+  update();
 })();

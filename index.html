@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=32">
+  <link rel="stylesheet" href="css/style.css?v=35">
 </head>
 <body>
 
@@ -82,6 +82,13 @@
     <!-- ① 메인 -->
     <section data-page="home" class="page">
       <div class="hero" aria-roledescription="carousel" aria-label="PoseAi 소개">
+        <!-- 배경: 자세 골격선 + 은은한 빛 (꾸밈용) -->
+        <div class="hero-bg" aria-hidden="true">
+          <span class="hero-glow g1"></span>
+          <span class="hero-glow g2"></span>
+          <div class="hero-skel"></div>
+          <div class="hero-skel twinkle"></div>
+        </div>
         <div class="hero-track" id="hero-track">
           <!-- 슬라이드 1: 측정 -->
           <div class="hero-slide" role="group" aria-roledescription="slide" aria-label="1 / 2">
@@ -175,23 +182,23 @@
           <h2 class="section-title">이 5가지를 측정해요</h2>
           <div class="grid-5">
             <article class="card">
-              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="50" y1="95" x2="50" y2="20" stroke="#D4DEF2" stroke-width="2" stroke-dasharray="4 4"/><line x1="50" y1="95" x2="50" y2="60" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="60" x2="72" y2="28" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="20" r="12" fill="none" stroke="#1D5FD1" stroke-width="4"/><path d="M50 44 A16 16 0 0 1 59 47" fill="none" stroke="#8F5B00" stroke-width="3"/></svg></div>
+              <div class="figure"><img src="asset/measure/neck.jpg" alt="거북목 측정 위치 그림" loading="lazy"></div>
               <h3>거북목</h3><p class="muted">측면에서 어깨→귀 선이 수직선과 이루는 각도</p><span class="chip">양호 15° 미만</span>
             </article>
             <article class="card">
-              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><circle cx="60" cy="20" r="12" fill="none" stroke="#1D5FD1" stroke-width="4"/><line x1="60" y1="34" x2="60" y2="95" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="22" y1="42" x2="98" y2="50" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="16" y1="42" x2="104" y2="42" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+              <div class="figure"><img src="asset/measure/shoulder.jpg" alt="어깨 수평 측정 위치 그림" loading="lazy"></div>
               <h3>어깨 수평</h3><p class="muted">정면에서 양쪽 어깨를 이은 선의 기울기</p><span class="chip">양호 2° 미만</span>
             </article>
             <article class="card">
-              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="60" y1="4" x2="60" y2="96" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><circle cx="68" cy="16" r="10" fill="none" stroke="#1D5FD1" stroke-width="4"/><line x1="46" y1="34" x2="88" y2="34" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="67" y1="34" x2="60" y2="72" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="72" x2="78" y2="72" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="48" y1="72" x2="46" y2="96" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="72" y1="72" x2="74" y2="96" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/></svg></div>
+              <div class="figure"><img src="asset/measure/trunk.jpg" alt="상체 쏠림 측정 위치 그림" loading="lazy"></div>
               <h3>상체 쏠림</h3><p class="muted">정면에서 어깨 가운데와 골반 가운데를 이은 선이 수직선과 이루는 각도</p><span class="chip">양호 2° 미만</span>
             </article>
             <article class="card">
-              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="60" y1="5" x2="60" y2="55" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="34" y1="52" x2="86" y2="58" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="53" x2="36" y2="95" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="80" y1="57" x2="84" y2="95" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="52" x2="94" y2="52" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+              <div class="figure"><img src="asset/measure/pelvis.jpg" alt="골반 수평 측정 위치 그림" loading="lazy"></div>
               <h3>골반 수평</h3><p class="muted">정면에서 양쪽 엉덩이를 이은 선의 기울기</p><span class="chip">양호 3° 미만</span>
             </article>
             <article class="card">
-              <div class="figure"><svg viewBox="0 0 120 100" width="120" height="100" aria-hidden="true"><line x1="40" y1="6" x2="80" y2="6" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round"/><line x1="44" y1="6" x2="44" y2="94" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><line x1="76" y1="6" x2="76" y2="94" stroke="#8F5B00" stroke-width="2" stroke-dasharray="4 4"/><polyline points="44,6 34,50 44,94" fill="none" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><polyline points="76,6 86,50 76,94" fill="none" stroke="#1D5FD1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="50" r="5" fill="#1D5FD1"/><circle cx="86" cy="50" r="5" fill="#1D5FD1"/></svg></div>
+              <div class="figure"><img src="asset/measure/knee.jpg" alt="무릎 정렬 측정 위치 그림" loading="lazy"></div>
               <h3>무릎 정렬</h3><p class="muted">정면에서 엉덩이→무릎→발목이 일직선에서 벗어난 각도 (O·X다리 경향)</p><span class="chip">양호 5° 미만</span>
             </article>
           </div>
@@ -463,9 +470,15 @@
 
   </main>
 
+  <!-- 맨 위로 / 맨 아래로 바로가기 -->
+  <div class="scroll-nav" id="scroll-nav" aria-label="페이지 이동">
+    <button type="button" id="to-top" aria-label="맨 위로">↑<span>TOP</span></button>
+    <button type="button" id="to-bottom" aria-label="맨 아래로">↓<span>END</span></button>
+  </div>
+
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=32"></script>
+  <script type="module" src="js/app.js?v=35"></script>
 </body>
 </html>
