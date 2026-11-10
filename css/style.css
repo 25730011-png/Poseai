@@ -274,11 +274,13 @@ body.no-scroll { overflow: hidden; }
 @media (max-width: 640px) { .menu-btn { margin-right: 0; width: 36px; height: 36px; } }
 
 /* 추천 영상 */
-.video-btn { align-self: flex-start; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--blue); background: var(--sky-soft); border-radius: 999px; padding: 6px 14px; text-decoration: none; }
+.video-btn { align-self: flex-start; margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--blue); background: var(--sky-soft); border: 0; cursor: pointer; border-radius: 999px; padding: 6px 14px; text-decoration: none; }
 .video-btn:hover { background: var(--card-soft); color: var(--blue); }
-.video-card { flex-direction: row; gap: 16px; align-items: flex-start; text-decoration: none; color: var(--ink); transition: border-color .15s; }
-.video-card:hover { border-color: var(--blue); color: var(--ink); }
-.video-thumb { flex: 0 0 64px; height: 64px; border-radius: 14px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.video-card { gap: 14px; color: var(--ink); }
+.video-frame { display: block; position: relative; width: 100%; aspect-ratio: 16 / 9; border: 0; padding: 0; border-radius: 14px; overflow: hidden; background: var(--navy); cursor: pointer; }
+.video-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.video-frame .play { position: absolute; inset: 0; margin: auto; width: 60px; height: 60px; border-radius: 50%; background: rgba(11,42,91,0.85); color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center; padding-left: 4px; transition: transform .15s; }
+.video-frame:hover .play { transform: scale(1.08); background: var(--blue); }
 
 /* 측정 항목 5개 */
 .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }

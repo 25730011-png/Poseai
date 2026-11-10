@@ -676,7 +676,7 @@ document.addEventListener('pagechange', e => {
           <p>${g.how}</p>
           <span class="muted-sm">${g.count}${g.caution ? ' · ' + g.caution : ''}</span>
           ${g.source ? `<span class="muted-sm">출처: ${g.sourceUrl ? `<a href="${g.sourceUrl}" target="_blank" rel="noopener">${g.source}</a>` : g.source}</span>` : ''}
-          ${g.video ? `<a class="video-btn" href="${g.video.url}" target="_blank" rel="noopener">▶ 관련 영상 보기</a>` : ''}
+          ${g.video ? `<button type="button" class="video-btn" data-yt="${g.video.youtube}">▶ 관련 영상 보기</button>` : ''}
         </div>
       </article>`;
   }
@@ -745,23 +745,53 @@ document.addEventListener('pagechange', e => {
 
   fetch('data/body-parts.json').then(r => r.json()).then(d => { parts = d; render(); }).catch(() => {});
 
-  // 추천 영상: 지금 보여주는 스트레칭과 관련된 영상만 (같은 영상은 한 번만)
+  // 추천 영상: 지금 보여주는 스트레칭과 관련된 영상만 (같은 영상은 한 번, 관련 항목은 합쳐서)
+  // 처음엔 썸네일만 보여주고, 누르면 그 자리에서 유튜브 영상 재생 (페이지가 무거워지지 않게)
   function renderVideos(shown) {
     const box = document.getElementById('video-list');
     if (!box) return;
-    const seen = new Set();
-    const vids = shown.filter(g => g.video && !seen.has(g.video.url) && seen.add(g.video.url)).map(g => ({ ...g.video, keys: g.keys }));
-    box.innerHTML = vids.map(v => `
-      <a class="card video-card" href="${v.url}" target="_blank" rel="noopener">
-        <span class="video-thumb" aria-hidden="true">▶</span>
-        <span class="stack-8">
+    const map = new Map();
+    shown.filter(g => g.video).forEach(g => {
+      const v = map.get(g.video.youtube) || { ...g.video, keys: [] };
+      g.keys.forEach(k => { if (!v.keys.includes(k)) v.keys.push(k); });
+      map.set(g.video.youtube, v);
+    });
+    box.innerHTML = [...map.values()].map(v => `
+      <article class="card video-card" id="yt-${v.youtube}">
+        <button type="button" class="video-frame" data-yt="${v.youtube}" aria-label="${v.title} 재생">
+          <img src="https://i.ytimg.com/vi/${v.youtube}/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+          <span class="play" aria-hidden="true">▶</span>
+        </button>
+        <div class="stack-8">
           <i class="badge good">${v.keys.map(k => CRITERIA[k].name).join(' · ')}</i>
           <b>${v.title}</b>
           <span class="muted-sm">${v.covers}</span>
-          <span class="muted-sm">${v.by} · 서울아산병원 건강TV</span>
-        </span>
-      </a>`).join('');
+          ${v.note ? `<span class="muted-sm">${v.note}</span>` : ''}
+          <span class="muted-sm">${v.by} · 서울아산병원 공식 유튜브 · <a href="${v.url}" target="_blank" rel="noopener">유튜브에서 보기</a></span>
+        </div>
+      </article>`).join('');
   }
+
+  // 썸네일 → 유튜브 플레이어로 바꾸기
+  function playVideo(id) {
+    const frame = document.querySelector(`#yt-${CSS.escape(id)} .video-frame`);
+    if (!frame) return;
+    const card = frame.closest('.video-card');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (frame.tagName === 'IFRAME') return;
+    const iframe = document.createElement('iframe');
+    iframe.className = 'video-frame';
+    iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+    iframe.title = frame.getAttribute('aria-label');
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    frame.replaceWith(iframe);
+  }
+  // 영상 썸네일이나 스트레칭 카드의 [관련 영상 보기]를 누르면 재생
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-yt]');
+    if (btn) playVideo(btn.dataset.yt);
+  });
 
   function render() {
     if (!guides || !CRITERIA) return;
