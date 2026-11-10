@@ -63,8 +63,10 @@ https://25730011-png.github.io/poseai
 - 교정 가이드에 추천 영상, 동작 그림(asset/stretch) 추가
 - guide.json의 key → keys(배열): 스트레칭 하나가 여러 항목에 연결됨
 
-## 로그인 + 구글 시트 저장 (11/10)
-- 회원가입: 아이디 + 닉네임 / 로그인: 아이디만 (비밀번호 없음, 과제용 간단 버전)
-- 기록 저장소: 구글 시트 (apps-script/Code.gs 를 시트의 Apps Script에 붙여넣고 웹 앱으로 배포)
-- js/app.js 의 SHEET_URL 에 웹 앱 URL을 넣으면 연결됨
-- 로그인 안 해도 측정·기록은 이 브라우저에 저장되고, 로그인하면 시트로 옮겨짐
+## 로그인 + 기록 저장 (Firebase, 11/10)
+- 회원가입: 아이디 + 닉네임 + 비밀번호 / 로그인: 아이디 + 비밀번호
+- Firebase Authentication(이메일/비밀번호) 사용. 아이디는 안에서 아이디@poseai.app 으로 처리
+- Firestore: users/{uid} (아이디·닉네임), users/{uid}/records/{저장 시각} (측정 기록)
+- 보안 규칙: 로그인한 본인만 자기 데이터 읽기·쓰기 (firebase-rules.txt)
+- js/app.js 의 firebaseConfig 에 Firebase 웹 앱 설정값을 넣으면 연결됨
+- 처음엔 구글 시트(Apps Script)로 만들었다가, 비밀번호가 없고 누구나 조회할 수 있는 보안 문제 때문에 Firebase로 바꿈

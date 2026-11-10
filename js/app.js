@@ -1113,29 +1113,55 @@ window.addEventListener('DOMContentLoaded', () => criteriaReady.finally(showPage
 
 
 /* =====================================================================
-   8. 회원가입·로그인 (아이디 + 닉네임) → 기록은 구글 시트에 저장
-   - 구글 시트에 붙인 Apps Script(apps-script/Code.gs)가 저장소 역할
-   - 비밀번호 없이 아이디로만 로그인 (과제용 간단 버전)
-   - 로그인 안 해도 측정·기록은 이 브라우저(LocalStorage)에 그대로 저장됨
+   8. 회원가입·로그인 (Firebase)
+   - Authentication: 아이디 + 비밀번호 (안에서는 아이디@poseai.app 이메일로 처리, 사용자에겐 아이디만 보임)
+   - Firestore: users/{uid} 에 아이디·닉네임, users/{uid}/records/{저장 시각} 에 측정 기록
+   - 보안 규칙으로 로그인한 본인만 자기 기록을 읽고 쓸 수 있음
+   - 로그인 안 해도 측정·기록은 이 브라우저(LocalStorage)에 저장되고, 로그인하면 계정으로 옮겨짐
    ===================================================================== */
-const SHEET_URL = '';   // Apps Script 웹 앱 URL 넣기. 예: 'https://script.google.com/macros/s/xxxx/exec'
+// Firebase 콘솔 → 프로젝트 설정 → 내 앱 → SDK 설정 및 구성 에 나오는 값 (사이트에 공개돼도 되는 값)
+const firebaseConfig = {
+  apiKey: 'AIzaSyDjQKjiMjGZZlr8iO7NsO7_4W1rlVOob98',
+  authDomain: 'poseai-facc5.firebaseapp.com',
+  projectId: 'poseai-facc5',
+  storageBucket: 'poseai-facc5.firebasestorage.app',
+  messagingSenderId: '517420913046',
+  appId: '1:517420913046:web:2a68f951c7535ceba38db7'
+};
+
+const FB_VER = '10.12.2';
+const ID_DOMAIN = '@poseai.app';
 const USER_KEY = 'poseai_user';
 
 function getUser() {
   try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch (e) { return null; }
 }
 
-// Apps Script는 Content-Type을 text/plain으로 보내야 브라우저가 막지 않음(CORS 사전 요청 없음)
-async function sheetApi(action, data = {}) {
-  if (!SHEET_URL) throw new Error('아직 구글 시트가 연결되지 않았어요');
-  const res = await fetch(SHEET_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, ...data })
-  });
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || '요청에 실패했어요');
-  return json;
+// Firebase는 필요할 때 불러옴 (CDN이 안 돼도 나머지 기능은 그대로 동작)
+let fb = null;
+async function loadFirebase() {
+  if (fb) return fb;
+  if (!firebaseConfig) throw new Error('아직 Firebase가 연결되지 않았어요');
+  const base = `https://www.gstatic.com/firebasejs/${FB_VER}`;
+  const [appMod, authMod, dbMod] = await Promise.all([
+    import(`${base}/firebase-app.js`),
+    import(`${base}/firebase-auth.js`),
+    import(`${base}/firebase-firestore.js`)
+  ]);
+  const app = appMod.initializeApp(firebaseConfig);
+  fb = { auth: authMod.getAuth(app), db: dbMod.getFirestore(app), A: authMod, D: dbMod };
+  return fb;
+}
+
+// Firebase 오류 → 알기 쉬운 말
+function authMessage(err) {
+  const code = err && err.code || '';
+  if (code.includes('email-already-in-use')) return '이미 있는 아이디예요. 다른 아이디를 써 주세요.';
+  if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) return '아이디나 비밀번호가 맞지 않아요.';
+  if (code.includes('weak-password')) return '비밀번호는 6자 이상으로 써 주세요.';
+  if (code.includes('too-many-requests')) return '시도가 너무 많아요. 잠시 후 다시 해 주세요.';
+  if (code.includes('network')) return '인터넷 연결을 확인해 주세요.';
+  return err.message || '잠시 후 다시 시도해 주세요.';
 }
 
 (() => {
@@ -1150,11 +1176,11 @@ async function sheetApi(action, data = {}) {
 
     $('sidebar-avatar').textContent = user ? user.nickname.slice(0, 1) : '?';
     $('sidebar-name').textContent = user ? `${user.nickname}님` : '로그인이 필요해요';
-    $('sidebar-sub').textContent = user ? `아이디 ${user.id} · 기록이 구글 시트에 저장돼요` : '지금은 게스트로 이용 중이에요';
+    $('sidebar-sub').textContent = user ? `아이디 ${user.id} · 기록이 계정에 저장돼요` : '지금은 게스트로 이용 중이에요';
     $('sidebar-login').hidden = !!user;
     $('sidebar-logout').hidden = !user;
 
-    $('sync-title').textContent = user ? `${user.nickname}님의 기록은 구글 시트에 저장돼요` : '기록 동기화는 로그인이 필요해요';
+    $('sync-title').textContent = user ? `${user.nickname}님의 기록은 계정에 저장돼요` : '기록 동기화는 로그인이 필요해요';
     $('sync-text').textContent = user
       ? '같은 아이디로 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.'
       : '지금 기록은 이 브라우저에만 임시로 저장돼요. 로그인하면 노트북·폰 어디서든 같은 기록을 볼 수 있어요.';
@@ -1166,9 +1192,8 @@ async function sheetApi(action, data = {}) {
   // 홈 리포트 카드: 로그인하면 내 최근 결과, 아니면 잠금
   function renderPreview(user) {
     const card = $('preview-card');
-    if (!card || !CRITERIA) return;
+    if (!card || !CRITERIA || !user) return;   // 로그인 전엔 잠금 화면(HTML 기본) 그대로
     const latest = getLatest();
-    if (!user) return;   // 잠금 화면(HTML 기본)을 그대로 둠
     card.classList.remove('locked');
     if (!latest) {
       card.innerHTML = `
@@ -1189,18 +1214,27 @@ async function sheetApi(action, data = {}) {
       <a href="#report" class="btn btn-outline btn-block">리포트 자세히 보기</a>`;
   }
 
-  // ----- 동기화: 이 브라우저 기록 ↔ 구글 시트 -----
-  async function sync(user) {
-    // 1) 이 브라우저에만 있던 기록을 시트로 올리기 (예전 기록엔 savedAt이 없어서 만들어 줌)
+  // ----- Firestore 저장 -----
+  // 문서 이름 = 저장 시각 → 같은 기록을 여러 번 올려도 하나만 남음
+  async function putRecords(uid, records) {
+    const { db, D } = await loadFirebase();
+    await Promise.all(records.map(r => {
+      const { saved, ...rec } = r;
+      return D.setDoc(D.doc(db, 'users', uid, 'records', String(rec.savedAt).replace(/\//g, '-')), rec);
+    }));
+  }
+
+  // 이 브라우저 기록 ↔ 계정 기록 합치기
+  async function sync(uid) {
+    const { db, D } = await loadFirebase();
     const local = getRecords().map((r, i) => ({ ...r, savedAt: r.savedAt || `${r.date}T00:00:0${i % 10}.local${i}` }));
-    if (local.length) await sheetApi('saveRecords', { id: user.id, records: local });
-    // 2) 시트에 있는 내 기록 전부 받아서 이 브라우저와 합치기 (savedAt 기준 중복 제거)
-    const { records } = await sheetApi('getRecords', { id: user.id });
+    if (local.length) await putRecords(uid, local);
+    const snap = await D.getDocs(D.collection(db, 'users', uid, 'records'));
     const map = new Map();
-    [...local, ...records].forEach(r => map.set(String(r.savedAt), r));
+    local.forEach(r => map.set(String(r.savedAt), r));
+    snap.forEach(d => map.set(String(d.data().savedAt), d.data()));
     const merged = [...map.values()].sort((a, b) => String(a.savedAt).localeCompare(String(b.savedAt)));
     localStorage.setItem(RECORD_KEY, JSON.stringify(merged));
-    // 최근 결과가 없으면 시트의 마지막 기록으로
     if (!getLatest() && merged.length) saveLatest({ ...merged[merged.length - 1], saved: true });
   }
 
@@ -1209,35 +1243,33 @@ async function sheetApi(action, data = {}) {
     document.dispatchEvent(new CustomEvent('pagechange', { detail: page }));
   }
 
-  async function afterLogin(user, msgEl) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    msgEl.textContent = '기록을 불러오는 중이에요...';
-    try {
-      await sync(user);
-    } catch (err) {
-      console.error(err);
-    }
-    updateUI();
-    location.hash = '#history';
-  }
-
   // ----- 회원가입 -----
   const signupForm = $('signup-form');
   signupForm.addEventListener('submit', async e => {
     e.preventDefault();
     const msg = signupForm.querySelector('.form-msg');
     const id = $('signup-id').value.trim().toLowerCase();
-    const nickname = $('signup-nick').value.trim();
+    const nickname = $('signup-nick').value.trim().slice(0, 12);
+    const pw = $('signup-pw').value;
     if (!/^[a-z0-9_]{3,20}$/.test(id)) { msg.textContent = '아이디는 영문·숫자·_ 3~20자로 써 주세요.'; return; }
     if (!nickname) { msg.textContent = '닉네임을 입력해 주세요.'; return; }
+    if (pw.length < 6) { msg.textContent = '비밀번호는 6자 이상으로 써 주세요.'; return; }
+    if (pw !== $('signup-pw2').value) { msg.textContent = '비밀번호 확인이 달라요.'; return; }
     msg.textContent = '가입하는 중이에요...';
     try {
-      const { user } = await sheetApi('signup', { id, nickname });
-      await afterLogin(user, msg);
+      const { auth, db, A, D } = await loadFirebase();
+      const cred = await A.createUserWithEmailAndPassword(auth, id + ID_DOMAIN, pw);
+      await A.updateProfile(cred.user, { displayName: nickname });
+      await D.setDoc(D.doc(db, 'users', cred.user.uid), { id, nickname, createdAt: D.serverTimestamp() });
+      localStorage.setItem(USER_KEY, JSON.stringify({ uid: cred.user.uid, id, nickname }));
+      await sync(cred.user.uid).catch(console.error);
       signupForm.reset();
       msg.textContent = '';
+      updateUI();
+      location.hash = '#history';
     } catch (err) {
-      msg.textContent = err.message;
+      console.error(err);
+      msg.textContent = authMessage(err);
     }
   });
 
@@ -1247,21 +1279,27 @@ async function sheetApi(action, data = {}) {
     e.preventDefault();
     const msg = loginForm.querySelector('.form-msg');
     const id = $('login-id').value.trim().toLowerCase();
-    if (!id) { msg.textContent = '아이디를 입력해 주세요.'; return; }
+    const pw = $('login-pw').value;
+    if (!id || !pw) { msg.textContent = '아이디와 비밀번호를 입력해 주세요.'; return; }
     msg.textContent = '로그인하는 중이에요...';
     try {
-      const { user } = await sheetApi('login', { id });
-      await afterLogin(user, msg);
+      const { auth, A } = await loadFirebase();
+      const cred = await A.signInWithEmailAndPassword(auth, id + ID_DOMAIN, pw);
+      localStorage.setItem(USER_KEY, JSON.stringify({ uid: cred.user.uid, id, nickname: cred.user.displayName || id }));
+      await sync(cred.user.uid).catch(console.error);
       loginForm.reset();
       msg.textContent = '';
+      updateUI();
+      location.hash = '#history';
     } catch (err) {
-      msg.textContent = err.message;
+      console.error(err);
+      msg.textContent = authMessage(err);
     }
   });
 
-  // ----- 로그아웃: 이 브라우저에 있던 내 기록도 지움 (기록은 구글 시트에 남아 있음) -----
-  $('sidebar-logout').addEventListener('click', () => {
-    if (!getUser()) return;
+  // ----- 로그아웃: 이 브라우저에 있던 내 기록도 지움 (계정에는 그대로 남아 있음) -----
+  $('sidebar-logout').addEventListener('click', async () => {
+    try { const { auth, A } = await loadFirebase(); await A.signOut(auth); } catch (e) { /* 연결 전이어도 로그아웃 처리 */ }
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(RECORD_KEY);
     localStorage.removeItem(LATEST_KEY);
@@ -1269,20 +1307,31 @@ async function sheetApi(action, data = {}) {
     location.reload();
   });
 
-  // ----- 기록 저장할 때 로그인 중이면 시트에도 저장 -----
+  // ----- 기록 저장할 때 로그인 중이면 계정에도 저장 -----
   document.addEventListener('recordsaved', e => {
     const user = getUser();
-    if (!user || !SHEET_URL) return;
-    sheetApi('saveRecords', { id: user.id, records: [e.detail] }).catch(err => console.error('시트 저장 실패', err));
+    if (!user || !firebaseConfig) return;
+    putRecords(user.uid, [e.detail]).catch(err => console.error('계정 저장 실패', err));
   });
 
-  // 화면 바뀔 때마다 표시 갱신 (홈 카드 등)
   document.addEventListener('pagechange', updateUI);
 
-  // 처음 들어왔을 때 로그인 상태면 시트에서 최신 기록 받아오기
-  criteriaReady.finally(() => {
+  // 처음 들어왔을 때: 로그인 상태 확인 → 계정 기록 받아오기
+  criteriaReady.finally(async () => {
     updateUI();
-    const user = getUser();
-    if (user && SHEET_URL) sync(user).then(refreshPage).catch(err => console.error(err));
+    if (!firebaseConfig || !getUser()) return;
+    try {
+      const { auth, A } = await loadFirebase();
+      A.onAuthStateChanged(auth, fbUser => {
+        if (!fbUser) {                       // 다른 곳에서 로그아웃됐거나 만료됨
+          localStorage.removeItem(USER_KEY);
+          updateUI();
+          return;
+        }
+        sync(fbUser.uid).then(refreshPage).catch(console.error);
+      });
+    } catch (err) {
+      console.error(err);
+    }
   });
 })();

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=24">
+  <link rel="stylesheet" href="css/style.css?v=27">
 </head>
 <body>
 
@@ -382,15 +382,16 @@
           <img src="asset/logo.svg" alt="" width="40" height="40">
           <span>Pose<em>Ai</em></span>
         </a>
-        <div class="center"><h1 class="page-title">로그인</h1><p class="muted-sm">아이디만 입력하면 돼요. 다른 기기에서도 내 기록을 볼 수 있어요.</p></div>
+        <div class="center"><h1 class="page-title">로그인</h1><p class="muted-sm">로그인하면 다른 기기에서도 내 기록을 볼 수 있어요.</p></div>
         <div class="auth-tabs"><a href="#login" class="active">로그인</a><a href="#signup">회원가입</a></div>
         <form id="login-form" class="stack-16">
           <label class="field">아이디<input type="text" id="login-id" placeholder="가입할 때 만든 아이디" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+          <label class="field">비밀번호<input type="password" id="login-pw" placeholder="비밀번호" autocomplete="current-password" required></label>
           <button type="submit" class="btn btn-primary btn-block">로그인</button>
           <p class="form-msg" role="status"></p>
         </form>
         <p class="center muted-sm">처음이에요? <a href="#signup"><b>회원가입</b></a></p>
-        <ul class="info-list"><li>저장되는 건 날짜, 각도, 점수 숫자뿐이에요</li><li>영상과 사진은 로그인해도 저장하지 않아요</li><li>비밀번호가 없어서 아이디를 아는 사람은 내 기록을 볼 수 있어요</li></ul>
+        <ul class="info-list"><li>저장되는 건 날짜, 각도, 점수 숫자뿐이에요</li><li>영상과 사진은 로그인해도 저장하지 않아요</li><li>내 기록은 로그인한 나만 볼 수 있어요</li></ul>
         <a href="#history" class="btn-text center">로그인 없이 계속 쓰기</a>
       </div>
     </section>
@@ -402,12 +403,13 @@
           <img src="asset/logo.svg" alt="" width="40" height="40">
           <span>Pose<em>Ai</em></span>
         </a>
-        <div class="center"><h1 class="page-title">회원가입</h1><p class="muted-sm">아이디랑 닉네임만 있으면 돼요.</p></div>
+        <div class="center"><h1 class="page-title">회원가입</h1><p class="muted-sm">이메일 없이 아이디로 가입해요.</p></div>
         <div class="auth-tabs"><a href="#login">로그인</a><a href="#signup" class="active">회원가입</a></div>
         <form id="signup-form" class="stack-16">
           <label class="field">아이디<input type="text" id="signup-id" placeholder="영문·숫자·_ 3~20자 (예: yujin_0301)" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
           <label class="field">닉네임<input type="text" id="signup-nick" placeholder="헤더랑 리포트에 보여요 (예: 유진)" maxlength="12" required></label>
-          <p class="muted-sm">다른 사람이 쉽게 짐작하지 못하는 아이디로 정해 주세요.</p>
+          <label class="field">비밀번호<input type="password" id="signup-pw" placeholder="6자 이상" autocomplete="new-password" minlength="6" required></label>
+          <label class="field">비밀번호 확인<input type="password" id="signup-pw2" placeholder="한 번 더 입력해 주세요" autocomplete="new-password" required></label>
           <button type="submit" class="btn btn-primary btn-block">가입하고 시작하기</button>
           <p class="form-msg" role="status"></p>
         </form>
@@ -420,6 +422,6 @@
   <footer class="footer">의학적 진단이 아닌 참고용 분석이에요. 통증이 있으면 전문가와 상담해 보세요.</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=24"></script>
+  <script type="module" src="js/app.js?v=27"></script>
 </body>
 </html>
