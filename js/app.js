@@ -978,14 +978,36 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
 
   async function askAI(question) {
     if (!AI_RELAY_URL) return null;
-    const res = await fetch(AI_RELAY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, context: measureContext(), model: currentModel })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || res.status);
+    let res;
+    try {
+      res = await fetch(AI_RELAY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, context: measureContext(), model: currentModel })
+      });
+    } catch (e) {
+      throw Object.assign(new Error('network'), { detail: '중계 서버에 연결하지 못했어요.' });
+    }
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) { /* JSON이 아니면 서버 코드 오류 */ }
+    if (!data) throw Object.assign(new Error('bad'), { detail: `중계 서버가 오류를 냈어요 (${res.status}).` });
+    if (!res.ok) throw Object.assign(new Error('api'), { detail: String(data.error || res.status) });
     return data;   // { answer, model }
+  }
+
+  // 오류 내용을 알기 쉬운 말로 (원인 찾기용)
+  function explainAIError(err) {
+    const d = String(err.detail || err.message || '');
+    const low = d.toLowerCase();
+    if (err.message === 'network') return ['인터넷이나 중계 서버(Cloudflare) 연결 문제예요.', 'Cloudflare 주소가 맞는지, ALLOW_ORIGIN이 내 사이트 주소인지 확인해 주세요.'];
+    if (err.message === 'bad') return ['중계 서버 코드에서 오류가 났어요.', 'Cloudflare에 최신 worker.js를 붙여넣고 배포했는지 확인해 주세요.'];
+    if (low.includes('key 없음') || low.includes('키가 설정')) return ['중계 서버에 AI 키가 없어요.', 'Cloudflare 설정 → 변수 및 비밀에 GEMINI_KEY / OPENAI_KEY를 넣어 주세요.'];
+    if (low.includes('api key') || low.includes('api_key') || low.includes('invalid') || low.includes('unauthenticated') || low.includes('401')) return ['AI 키가 맞지 않아요.', '키를 다시 복사해서 넣거나, 키를 준 곳에 사용 가능한지 물어봐 주세요.'];
+    if (low.includes('quota') || low.includes('insufficient') || low.includes('billing') || low.includes('429') || low.includes('rate')) return ['AI 사용량 한도를 넘었거나 결제가 필요한 상태예요.', '잠시 뒤 다시 하거나 다른 모델을 골라 주세요.'];
+    if (low.includes('permission') || low.includes('403') || low.includes('denied')) return ['이 키로는 이 모델을 쓸 권한이 없어요.', '다른 모델(예: GPT-4o mini)을 골라 보세요.'];
+    if (low.includes('not found') || low.includes('404') || low.includes('does not exist')) return ['고른 모델을 찾을 수 없어요.', '다른 모델을 골라 보세요.'];
+    return ['AI 답변을 불러오지 못했어요.', '잠시 후 다시 해 보거나 다른 모델을 골라 주세요.'];
   }
 
   aiForm.addEventListener('submit', async e => {
@@ -1019,7 +1041,13 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
       }
     } catch (err) {
       console.error(err);
-      thinking.textContent = '지금은 AI 답변을 불러오지 못했어요. 다른 모델을 골라 보거나 위의 질문 버튼을 이용해 주세요.';
+      const [why, how] = explainAIError(err);
+      thinking.textContent = `${why} ${how}`;
+      // 실제 오류 문장 (캡처해서 원인 찾을 때 쓰기)
+      const meta = document.createElement('span');
+      meta.className = 'ans-meta';
+      meta.textContent = `오류: ${String(err.detail || err.message).slice(0, 160)}`;
+      thinking.appendChild(meta);
     }
     chatBox.scrollTop = chatBox.scrollHeight;
   });

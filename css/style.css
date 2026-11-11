@@ -414,3 +414,23 @@ img.stretch-img { object-fit: cover; }
 .chat-pop-body .ai-row input { flex-basis: 180px; }
 @media (prefers-reduced-motion: reduce) { .faq-fab { animation: none; } }
 @media (max-width: 640px) { .faq-fab { width: 54px; height: 54px; right: 12px; bottom: 124px; } }
+
+/* ===== 채팅 글씨·칸 크기 맞추기 ===== */
+.ai-row input { font-size: 15px; text-overflow: ellipsis; }
+.ai-row input::placeholder { font-size: 14px; color: var(--muted); }
+/* 포즈봇 창 안에서는 작게, 입력칸은 한 줄로 */
+.chat-pop-body .chat { gap: 12px; }
+.chat-pop-body .chat-box { gap: 8px; }
+.chat-pop-body .bubble { font-size: 14px; line-height: 1.55; padding: 9px 13px; border-radius: 16px; }
+.chat-pop-body .faq-buttons { gap: 6px; padding-top: 12px; }
+.chat-pop-body .faq-buttons button { font-size: 13px; padding: 7px 12px; }
+.chat-pop-body .ai-form { padding-top: 12px; gap: 6px; }
+.chat-pop-body .ai-form label { font-size: 14px; }
+.chat-pop-body .ai-row { flex-wrap: nowrap; gap: 6px; }
+.chat-pop-body .ai-row input { flex: 1 1 auto; height: 42px; padding: 0 12px; font-size: 14px; }
+.chat-pop-body .ai-row input::placeholder { font-size: 13px; }
+.chat-pop-body .ai-row .btn { height: 42px; padding: 0 14px; font-size: 14px; flex: 0 0 auto; }
+.chat-pop-body .ai-bottom { gap: 8px; }
+.chat-pop-body .ai-credit { font-size: 11px; line-height: 1.5; }
+.chat-pop-body .model-btn { font-size: 12px; padding: 5px 10px; }
+.chat-pop-body .model-menu { width: 270px; }
