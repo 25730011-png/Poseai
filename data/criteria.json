@@ -1,0 +1,29 @@
+{
+  "neck": {
+    "name": "거북목",
+    "part": "목",
+    "view": "측면",
+    "desc": "어깨→귀 선이 수직선과 이루는 각도",
+    "good": 15,
+    "warn": 25,
+    "penalty": 2
+  },
+  "shoulder": {
+    "name": "어깨 수평",
+    "part": "어깨",
+    "view": "정면",
+    "desc": "양쪽 어깨를 이은 선의 기울기",
+    "good": 2,
+    "warn": 5,
+    "penalty": 8
+  },
+  "pelvis": {
+    "name": "골반 수평",
+    "part": "골반",
+    "view": "정면",
+    "desc": "양쪽 엉덩이를 이은 선의 기울기",
+    "good": 3,
+    "warn": 6,
+    "penalty": 6
+  }
+}
