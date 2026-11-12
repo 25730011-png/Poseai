@@ -1074,6 +1074,13 @@ function showPage() {
   document.querySelectorAll('.nav a, .sidebar-nav a:not([data-scroll])').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === '#' + page);
   });
+  // 모바일 아래 탭바 (리포트는 '측정', 로그인·회원가입은 '기록' 탭에 불 켜기)
+  const tabPage = { report: 'measure', login: 'history', signup: 'history', faq: 'home' }[page] || page;
+  document.querySelectorAll('.tabbar a').forEach(a => {
+    const on = a.getAttribute('href') === '#' + tabPage;
+    a.classList.toggle('active', on);
+    on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+  });
 
   // 화면 바뀌면 맨 위로 (section은 id 대신 data-page를 써서 브라우저가 중간으로 점프하지 않게 함)
   setTimeout(() => window.scrollTo(0, 0), 0);
@@ -1455,12 +1462,15 @@ function authMessage(err) {
   const home = document.getElementById('chat-home');
   if (!fab || !pop || !card) return;
   const POS_KEY = 'poseai_fab_pos';
+  const isMobile = () => true;   // 모바일 전용 화면
 
   // ----- 위치 -----
   function place(x, y) {
     const w = fab.offsetWidth, h = fab.offsetHeight;
-    x = Math.min(Math.max(8, x), window.innerWidth - w - 8);
-    y = Math.min(Math.max(8, y), window.innerHeight - h - 8);
+    const bottomGap = isMobile() ? 72 : 8;                // 폰에서는 아래 탭바를 가리지 않게
+    const col = document.body.getBoundingClientRect();   // 폰 폭(430px) 안에서만 움직이게
+    x = Math.min(Math.max(col.left + 8, x), col.right - w - 8);
+    y = Math.min(Math.max(8, y), window.innerHeight - h - bottomGap);
     fab.style.left = x + 'px'; fab.style.top = y + 'px';
     fab.style.right = 'auto'; fab.style.bottom = 'auto';
     fab.classList.toggle('tip-right', x < window.innerWidth / 2);   // 왼쪽에 있으면 말풍선을 오른쪽에
@@ -1508,6 +1518,7 @@ function authMessage(err) {
 
   // ----- 채팅 창 -----
   function placePop() {
+    if (isMobile()) { pop.style.left = ''; pop.style.top = ''; return; }   // 폰에서는 CSS로 아래에서 올라오는 창
     const r = fab.getBoundingClientRect();
     const pw = pop.offsetWidth, ph = pop.offsetHeight, W = window.innerWidth, H = window.innerHeight;
     let x, y;
