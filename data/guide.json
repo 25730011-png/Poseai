@@ -11,11 +11,13 @@
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
-      "title": "거북목 증후군 [건강플러스]",
-      "by": "서울아산병원 정형외과 이동호 교수",
-      "covers": "벽에 기대 턱 당기기, 어깨·가슴 펴기",
-      "url": "https://www.youtube.com/watch?v=g1k9iIIJlzA",
-      "youtube": "g1k9iIIJlzA"
+      "title": "초간단 거북목 스트레칭 (수건, 테니스공)",
+      "by": "아주대병원 재활의학과 윤승현 교수",
+      "channel": "아주대병원TV",
+      "year": 2021,
+      "youtube": "-nOgOs4r6Ys",
+      "url": "https://www.youtube.com/watch?v=-nOgOs4r6Ys",
+      "covers": "초간단 거북목 스트레칭 (수건, 테니스공)"
     }
   },
   {
@@ -30,11 +32,13 @@
     "source": "국민건강보험공단 건강iN 매거진 「그러다 거북목 될라」",
     "sourceUrl": "https://www.nhis.or.kr/magazin/125/html/c05.html",
     "video": {
-      "title": "거북목 증후군 [건강플러스]",
-      "by": "서울아산병원 정형외과 이동호 교수",
-      "covers": "벽에 기대 턱 당기기, 어깨·가슴 펴기",
-      "url": "https://www.youtube.com/watch?v=g1k9iIIJlzA",
-      "youtube": "g1k9iIIJlzA"
+      "title": "경추통·거북목·라운드숄더 해결하는 자세와 운동 2편",
+      "by": "아주대병원 재활의학과 윤승현 교수",
+      "channel": "아주대병원TV",
+      "year": 2023,
+      "youtube": "CSCTcjPdlVA",
+      "url": "https://www.youtube.com/watch?v=CSCTcjPdlVA",
+      "covers": "경추통·거북목·라운드숄더 해결하는 자세와 운동 2편"
     }
   },
   {
@@ -49,11 +53,13 @@
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
-      "title": "사무실에서 하는 목, 어깨 스트레칭",
-      "by": "서울아산병원 스포츠재활 김소정",
-      "covers": "목 옆 근육 늘리기, 등·날개뼈 풀기",
-      "url": "https://www.youtube.com/watch?v=40spd1w5Cw0",
-      "youtube": "40spd1w5Cw0"
+      "title": "목 어깨 뻣뻣할 땐 집에서 쉽게! 찌릿찌릿 스트레칭",
+      "by": "재활의학과 전문의 이고은 원장",
+      "channel": "비온뒤",
+      "year": 2025,
+      "youtube": "VfLFvagBSpY",
+      "url": "https://www.youtube.com/watch?v=VfLFvagBSpY",
+      "covers": "목 어깨 뻣뻣할 땐 집에서 쉽게! 찌릿찌릿 스트레칭"
     }
   },
   {
@@ -68,11 +74,13 @@
     "source": "질병관리청 국가건강정보포털 「일자목(거북목)증후군」",
     "sourceUrl": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972",
     "video": {
-      "title": "사무실에서 하는 목, 어깨 스트레칭",
-      "by": "서울아산병원 스포츠재활 김소정",
-      "covers": "목 옆 근육 늘리기, 등·날개뼈 풀기",
-      "url": "https://www.youtube.com/watch?v=40spd1w5Cw0",
-      "youtube": "40spd1w5Cw0"
+      "title": "경추통·거북목·라운드숄더 해결하는 자세와 운동 2편",
+      "by": "아주대병원 재활의학과 윤승현 교수",
+      "channel": "아주대병원TV",
+      "year": 2023,
+      "youtube": "CSCTcjPdlVA",
+      "url": "https://www.youtube.com/watch?v=CSCTcjPdlVA",
+      "covers": "경추통·거북목·라운드숄더 해결하는 자세와 운동 2편"
     }
   },
   {
@@ -85,7 +93,16 @@
     "caution": "엉덩이가 의자에서 뜨지 않게, 상체가 앞으로 숙여지지 않게 해요.",
     "image": "pages/asset/images/stretch/side-bend.jpg",
     "source": "",
-    "sourceUrl": ""
+    "sourceUrl": "",
+    "video": {
+      "title": "요방형근 스트레칭",
+      "by": "에스포항병원 물리치료실",
+      "channel": "에스포항병원",
+      "year": 2026,
+      "youtube": "RdENz1drKSw",
+      "url": "https://www.youtube.com/watch?v=RdENz1drKSw",
+      "covers": "요방형근(옆구리·허리) 스트레칭"
+    }
   },
   {
     "keys": [
@@ -99,11 +116,13 @@
     "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
     "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html",
     "video": {
-      "title": "사무실에서 하는 허리 스트레칭",
-      "by": "서울아산병원 스포츠재활 김소정",
-      "covers": "다리 꼬고 앞으로 숙이기(골반·엉덩이 균형)",
-      "url": "https://www.youtube.com/watch?v=-JzaMksAeew",
-      "youtube": "-JzaMksAeew"
+      "title": "틀어진 골반 바로 잡는 간단한 스트레칭",
+      "by": "연세와병원 도수치료사",
+      "channel": "연세와병원",
+      "year": 2026,
+      "youtube": "dwXAx2HPVGg",
+      "url": "https://www.youtube.com/watch?v=dwXAx2HPVGg",
+      "covers": "틀어진 골반 바로 잡는 간단한 스트레칭"
     }
   },
   {
@@ -118,11 +137,13 @@
     "source": "근로복지공단 웹진 「누구나 쉽게 의자로 할 수 있는 허리 운동과 스트레칭」 (근로복지공단 대구병원 물리치료사)",
     "sourceUrl": "https://webzine.comwel.or.kr/vol92/sub2-4.html",
     "video": {
-      "title": "사무실에서 하는 허리 스트레칭",
-      "by": "서울아산병원 스포츠재활 김소정",
-      "covers": "다리 꼬고 앞으로 숙이기(골반·엉덩이 균형)",
-      "url": "https://www.youtube.com/watch?v=-JzaMksAeew",
-      "youtube": "-JzaMksAeew"
+      "title": "필수 허리 스트레칭, 장요근 스트레칭",
+      "by": "서울원병원",
+      "channel": "서울원병원",
+      "year": 2022,
+      "youtube": "ii9AUNTn-Ww",
+      "url": "https://www.youtube.com/watch?v=ii9AUNTn-Ww",
+      "covers": "필수 허리 스트레칭, 장요근 스트레칭"
     }
   }
 ]

@@ -866,7 +866,7 @@ document.addEventListener('pagechange', e => {
           <p class="stretch-count"><span>횟수</span>${g.count}</p>
           <div class="stretch-actions">
             ${g.video
-              ? `<button type="button" class="video-btn" data-inline-yt="${g.video.youtube}" data-title="${g.video.title}">▶ 관련 영상 보기</button>`
+              ? `<button type="button" class="video-btn" data-inline-yt="${g.video.youtube}" data-title="${g.video.title}" data-by="${g.video.by}${g.video.year ? ' · ' + g.video.year + '년' : ''}">▶ 관련 영상 보기</button>`
               : `<button type="button" class="video-btn" disabled>영상 준비 중</button>`}
             <button type="button" class="done-btn${doneToday().includes(g.title) ? ' on' : ''}" data-done="${g.title}" aria-pressed="${doneToday().includes(g.title)}">${doneToday().includes(g.title) ? '✓ 오늘 했어요' : '오늘 했어요'}</button>
           </div>
@@ -1008,7 +1008,7 @@ document.addEventListener('pagechange', e => {
     }
     box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${btn.dataset.inlineYt}?autoplay=1&rel=0" title="${btn.dataset.title}"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      <p>${btn.dataset.title} · 서울아산병원 공식 유튜브</p>`;
+      <p>${btn.dataset.title} · ${btn.dataset.by || ''} · <a href="https://www.youtube.com/watch?v=${btn.dataset.inlineYt}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`;
     box.hidden = false;
     btn.textContent = '영상 닫기 ✕';
     btn.classList.add('on');
@@ -1330,7 +1330,7 @@ const RELAY_URL = 'https://poseai-relay.ikongjyj11.workers.dev';
 // 화면이 바뀌면 'pagechange' 이벤트를 보내서 각 화면 JS가 필요할 때 실행되게 함
 //   예) document.addEventListener('pagechange', e => { if (e.detail === 'report') { ... } });
 
-const PAGES = ['home', 'measure', 'report', 'history', 'guide', 'faq', 'login', 'signup'];
+const PAGES = ['home', 'measure', 'report', 'history', 'guide', 'focus', 'faq', 'login', 'signup'];
 
 function showPage() {
   const id = location.hash.replace('#', '');
@@ -1344,7 +1344,7 @@ function showPage() {
     a.classList.toggle('active', a.getAttribute('href') === '#' + page);
   });
   // 모바일 아래 탭바 (리포트는 '측정', 로그인·회원가입은 '기록' 탭에 불 켜기)
-  const tabPage = { report: 'measure', login: 'history', signup: 'history', faq: 'home' }[page] || page;
+  const tabPage = { report: 'measure', login: 'history', signup: 'history', faq: 'home', focus: 'home' }[page] || page;
   document.querySelectorAll('.tabbar a').forEach(a => {
     const on = a.getAttribute('href') === '#' + tabPage;
     a.classList.toggle('active', on);
@@ -1891,4 +1891,209 @@ function authMessage(err) {
     if (e.detail === 'measure') notice();
   });
   criteriaReady.then(() => { card(); notice(); });
+})();
+
+
+/* =====================================================================
+   15. 공부 타이머 · 자세 지킴이 (#focus)
+   - 측정은 '그 순간'만 보지만, 공부하는 동안 나도 모르게 하는 자세를 봄
+   - 노트북 웹캠(정면)으로: 처음 3초 바른 자세를 기준으로 기억하고
+     · 코~어깨 높이가 줄어들면(고개 숙임·목 내밈) 또는
+     · 어깨 폭이 커지면(화면 쪽으로 몸이 다가감)
+     5초 이상 이어질 때 "거북이 됐어요" 알림
+   - 끝나면 바른 자세 유지율, 경고 횟수, 가장 오래 유지한 시간 저장
+   ===================================================================== */
+(() => {
+  const $ = id => document.getElementById(id);
+  const setupEl = $('focus-setup'), runEl = $('focus-run'), resultEl = $('focus-result');
+  if (!setupEl) return;
+  const fVideo = $('focus-video'), fCanvas = $('focus-canvas'), fCtx = fCanvas.getContext('2d');
+  const KEY = 'poseai_focus';
+  const NOSE = 0;
+  const BAD_HOLD = 5000;          // 이만큼(ms) 나쁜 자세가 이어지면 경고
+  const RING = 2 * Math.PI * 54;
+
+  let minutes = 25, fStream = null, timer = null, fDrawer = null;
+  let base = null, calib = [], state = 'good', badSince = 0, warned = false;
+  let startAt = 0, endAt = 0, goodMs = 0, seenMs = 0, lastTick = 0, alerts = 0, streak = 0, best = 0;
+
+  // 포즈 캐릭터 (좋을 때 바로 선 모습, 나쁠 때 목 쭉 나온 거북이 모습)
+  const BUDDY = `<svg viewBox="0 0 120 120"><ellipse class="shadow" cx="60" cy="110" rx="30" ry="5"/>
+    <g class="body"><rect x="38" y="62" width="44" height="40" rx="20"/><path class="shell" d="M40 84c4-16 36-16 40 0"/></g>
+    <g class="head"><line class="neck" x1="60" y1="66" x2="60" y2="48"/><circle cx="60" cy="38" r="20"/>
+      <circle class="eye" cx="53" cy="36" r="2.6"/><circle class="eye" cx="67" cy="36" r="2.6"/><path class="mouth" d="M53 45q7 5 14 0"/></g></svg>`;
+  document.querySelectorAll('.pose-buddy').forEach(el => { el.innerHTML = BUDDY; });
+
+  // 시간 고르기
+  setupEl.querySelectorAll('[data-min]').forEach(b => b.addEventListener('click', () => {
+    setupEl.querySelectorAll('[data-min]').forEach(x => x.classList.toggle('active', x === b));
+    minutes = +b.dataset.min;
+  }));
+
+  // 알림 소리 (짧은 삑)
+  let actx = null;
+  function beep() {
+    if (!$('focus-sound').checked) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.value = 660; g.gain.value = 0.08;
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + 0.18);
+    } catch (e) {}
+  }
+
+  const fmtTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+  const fmtMin = ms => ms >= 60000 ? `${Math.floor(ms / 60000)}분` : `${Math.round(ms / 1000)}초`;
+
+  function setState(next, msg) {
+    state = next;
+    document.querySelectorAll('#buddy, .focus-tile .pose-buddy').forEach(el => { el.dataset.state = next; });
+    $('focus-state').textContent = msg;
+    runEl.classList.toggle('bad', next === 'bad');
+  }
+
+  // 정면 웹캠에서 자세 숫자 2개 뽑기
+  function features(lm) {
+    const n = lm[NOSE], l = lm[P.L_SHOULDER], r = lm[P.R_SHOULDER];
+    if (!visible(n, l, r)) return null;
+    const width = Math.hypot(l.x - r.x, l.y - r.y);
+    const midY = (l.y + r.y) / 2;
+    return { height: (midY - n.y) / width, width, tilt: Math.abs(tiltAngle(l, r)) };
+  }
+
+  async function start() {
+    setupEl.hidden = true; resultEl.hidden = true; runEl.hidden = false;
+    $('focus-msg').textContent = '카메라를 켜는 중이에요';
+    setState('good', '기준 자세 기억 중');
+    try {
+      await loadModel();
+      fStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+      fVideo.srcObject = fStream;
+      await fVideo.play();
+      fCanvas.width = fVideo.videoWidth; fCanvas.height = fVideo.videoHeight;
+      fDrawer = new DrawingUtils(fCtx);
+    } catch (err) {
+      console.error(err);
+      $('focus-msg').textContent = err.name === 'NotAllowedError' ? '카메라 권한을 허용해 주세요' : '카메라나 AI 모델을 불러오지 못했어요';
+      return;
+    }
+    base = null; calib = []; badSince = 0; warned = false;
+    goodMs = seenMs = alerts = streak = best = 0;
+    startAt = Date.now(); endAt = startAt + minutes * 60000; lastTick = startAt;
+    $('focus-msg').textContent = '바른 자세로 3초만 있어 주세요';
+    // 화면을 다른 탭으로 옮겨도 돌아가게 rAF 대신 setInterval (백그라운드는 1초마다)
+    timer = setInterval(tick, 200);
+  }
+
+  function tick() {
+    const now = Date.now();
+    const dt = now - lastTick; lastTick = now;
+    const left = endAt - now;
+    $('focus-time').textContent = fmtTime(left);
+    $('focus-bar').style.strokeDashoffset = RING * (1 - Math.min(1, (now - startAt) / (endAt - startAt)));
+    if (left <= 0) return finish(true);
+
+    if (fVideo.readyState < 2) return;
+    const res = landmarker.detectForVideo(fVideo, performance.now());
+    fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+    const lm = res.landmarks[0];
+    const f = lm && features(lm);
+    if (lm) fDrawer.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: state === 'bad' ? '#F59E0B' : '#38BDF8', lineWidth: 3 });
+
+    if (!f) { $('focus-msg').textContent = '얼굴과 양쪽 어깨가 보이게 앉아 주세요'; return; }
+
+    // 처음 3초: 기준 자세 기억
+    if (!base) {
+      calib.push(f);
+      if (calib.length >= 15) {
+        const avg = k => calib.reduce((a, c) => a + c[k], 0) / calib.length;
+        base = { height: avg('height'), width: avg('width') };
+        $('focus-msg').textContent = '기준 자세를 기억했어요. 공부 시작!';
+        setState('good', '바른 자세');
+      }
+      return;
+    }
+
+    seenMs += dt;
+    const drop = 1 - f.height / base.height;      // 고개 숙임·목 내밈
+    const closer = f.width / base.width - 1;       // 화면 쪽으로 다가감
+    const isBad = drop > 0.18 || closer > 0.15 || f.tilt > 6;
+
+    if (!isBad) {
+      goodMs += dt; streak += dt; best = Math.max(best, streak);
+      badSince = 0; warned = false;
+      if (state !== 'good') { setState('good', '바른 자세'); document.title = 'PoseAi | 공부 타이머'; }
+      $('focus-msg').textContent = '잘하고 있어요';
+    } else {
+      streak = 0;
+      if (!badSince) badSince = now;
+      if (now - badSince > BAD_HOLD && !warned) {
+        warned = true; alerts++;
+        const why = f.tilt > 6 ? '어깨가 한쪽으로 기울었어요' : closer > 0.15 ? '화면에 너무 가까워요' : '목이 앞으로 나왔어요';
+        setState('bad', '거북이 됐어요 🐢');
+        $('focus-msg').textContent = `${why} · 허리 펴고 턱을 살짝 당겨요`;
+        document.title = '🐢 자세! | PoseAi';
+        beep();
+      }
+    }
+    $('focus-good').textContent = `${Math.round(goodMs / Math.max(1, seenMs) * 100)}%`;
+    $('focus-alerts').textContent = `${alerts}회`;
+    $('focus-best').textContent = fmtMin(best);
+  }
+
+  function stopCam() {
+    clearInterval(timer); timer = null;
+    if (fStream) fStream.getTracks().forEach(t => t.stop());
+    fStream = null; fVideo.srcObject = null;
+    document.title = 'PoseAi | 웹캠으로 보는 나의 체형';
+  }
+
+  function finish(done) {
+    stopCam();
+    runEl.hidden = true; setupEl.hidden = false;
+    const studied = Math.min(Date.now(), endAt) - startAt;
+    if (seenMs < 10000) { resultEl.hidden = true; return; }    // 10초도 안 봤으면 기록 안 함
+    const pct = Math.round(goodMs / seenMs * 100);
+    const rec = { date: localDate(), at: new Date().toTimeString().slice(0, 5), min: Math.round(studied / 60000), pct, alerts, best: Math.round(best / 1000) };
+    let list = []; try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+    list.push(rec);
+    try { localStorage.setItem(KEY, JSON.stringify(list.slice(-60))); } catch (e) {}
+
+    const mood = pct >= 80 ? ['good', '바른 자세 장인이에요!'] : pct >= 50 ? ['mid', '절반 넘게 잘 버텼어요'] : ['bad', '거북이가 자주 나타났어요'];
+    resultEl.innerHTML = `
+      <div class="pose-buddy big" data-state="${mood[0] === 'bad' ? 'bad' : 'good'}" aria-hidden="true">${BUDDY}</div>
+      <b class="fr-title">${done ? '타이머 완료!' : '수고했어요'} ${mood[1]}</b>
+      <div class="focus-stats">
+        <div><span>공부 시간</span><b>${fmtMin(studied)}</b></div>
+        <div><span>바른 자세</span><b>${pct}%</b></div>
+        <div><span>거북이 경고</span><b>${alerts}회</b></div>
+      </div>
+      <p class="note">${pct < 50 ? '목이 자주 나왔다면 맞춤 스트레칭을 해 보세요.' : '이 자세 그대로 계속 가 봐요.'}</p>
+      <a href="#guide" class="btn btn-soft btn-block">스트레칭 하러 가기 →</a>`;
+    resultEl.hidden = false;
+    renderHistory();
+  }
+
+  function renderHistory() {
+    let list = []; try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+    const ul = $('focus-history');
+    if (!list.length) { ul.innerHTML = '<li class="empty">아직 기록이 없어요</li>'; return; }
+    ul.innerHTML = list.slice(-7).reverse().map(r => `
+      <li><div class="rec-main"><b>${+r.date.slice(5, 7)}월 ${+r.date.slice(8, 10)}일 ${r.at}</b><span>${r.min}분 공부 · 경고 ${r.alerts}회</span></div>
+      <div class="rec-val"><b>${r.pct}%</b><span class="lv-${r.pct >= 80 ? 'good' : r.pct >= 50 ? 'warn' : 'check'}">바른 자세</span></div></li>`).join('');
+  }
+
+  $('focus-start').addEventListener('click', () => {
+    // 소리는 사용자가 누른 순간에만 켤 수 있어서 여기서 미리 준비
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    start();
+  });
+  $('focus-stop').addEventListener('click', () => finish(false));
+  $('focus-recal').addEventListener('click', () => { base = null; calib = []; setState('good', '기준 자세 기억 중'); $('focus-msg').textContent = '바른 자세로 3초만 있어 주세요'; });
+  document.addEventListener('pagechange', e => {
+    if (e.detail === 'focus') renderHistory();
+    else if (timer) finish(false);     // 다른 화면으로 가면 타이머 끝
+  });
+  renderHistory();
 })();

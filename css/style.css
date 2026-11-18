@@ -757,3 +757,59 @@ a.tile b { padding-right: 26px; }
 .today-box .next-m { font-size: 12px; color: var(--muted-2); }
 .today-box .next-m b { color: var(--blue); }
 .today-box .next-m a { font-weight: 700; }
+
+/* ===== v74: 공부 타이머 · 포즈 캐릭터 ===== */
+.pose-buddy { width: 84px; height: 84px; flex: 0 0 auto; }
+.pose-buddy.big { width: 120px; height: 120px; margin: 0 auto; }
+.pose-buddy.mini { position: absolute; right: 12px; bottom: 6px; width: 54px; height: 54px; }
+.pose-buddy svg { width: 100%; height: 100%; overflow: visible; }
+.pose-buddy .shadow { fill: rgba(14,27,51,.08); }
+.pose-buddy .body rect { fill: #5B9BF0; }
+.pose-buddy .shell { fill: none; stroke: transparent; stroke-width: 4; stroke-linecap: round; }
+.pose-buddy .head circle:first-of-type { fill: #FFE0C7; stroke: #F3C9A8; stroke-width: 2; }
+.pose-buddy .neck { stroke: #FFE0C7; stroke-width: 10; stroke-linecap: round; }
+.pose-buddy .eye { fill: #0E1B33; }
+.pose-buddy .mouth { fill: none; stroke: #0E1B33; stroke-width: 2.4; stroke-linecap: round; }
+.pose-buddy .head, .pose-buddy .body { transition: transform .5s cubic-bezier(.3,1.4,.5,1); transform-origin: 60px 70px; }
+.pose-buddy[data-state="good"] .head { animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-2px); } }
+/* 거북이 모드: 목이 앞으로 쭉, 등에 등껍질, 표정 시무룩 */
+.pose-buddy[data-state="bad"] .head { transform: translate(22px, 14px); }
+.pose-buddy[data-state="bad"] .body { transform: rotate(8deg); }
+.pose-buddy[data-state="bad"] .body rect { fill: #7DBE8E; }
+.pose-buddy[data-state="bad"] .shell { stroke: #3F8A55; }
+.pose-buddy[data-state="bad"] .head circle:first-of-type { fill: #CDEBC9; stroke: #9CCB98; }
+.pose-buddy[data-state="bad"] .neck { stroke: #CDEBC9; }
+.pose-buddy[data-state="bad"] .mouth { d: path("M53 47q7 -4 14 0"); }
+
+.focus-tile { position: relative; padding-right: 76px; background: linear-gradient(120deg, #E0F4FE, #DCEBFF) !important; }
+.focus-setup, .focus-result { background: #fff; border-radius: 20px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; align-items: stretch; text-align: center; }
+.focus-q { font-size: 16px; font-weight: 700; }
+.focus-min { height: 48px; }
+.focus-min button.active { background: #fff; color: var(--blue); }
+.focus-sound { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 12px; color: var(--muted-2); }
+.focus-run { display: flex; flex-direction: column; gap: 14px; }
+.focus-top { background: #fff; border-radius: 20px; padding: 18px; display: flex; align-items: center; justify-content: space-around; transition: background .3s; }
+.focus-run.bad .focus-top { background: #FFF6E5; }
+.focus-ring { position: relative; width: 132px; height: 132px; }
+.focus-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.focus-ring circle { fill: none; stroke-width: 9; }
+.focus-ring .track { stroke: var(--soft-2); }
+.focus-ring .bar { stroke: var(--blue); stroke-linecap: round; stroke-dasharray: 339.3; stroke-dashoffset: 339.3; transition: stroke-dashoffset .3s linear; }
+.focus-run.bad .focus-ring .bar { stroke: #F59E0B; }
+.focus-ring > div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.focus-ring b { font-size: 28px; font-variant-numeric: tabular-nums; }
+.focus-ring span { font-size: 11px; color: var(--muted); font-weight: 700; }
+.focus-run.bad .focus-ring span { color: var(--warn); }
+.focus-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.focus-stats div { background: #fff; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+.focus-result .focus-stats div { background: var(--bg); }
+.focus-stats span { font-size: 11px; color: var(--muted); }
+.focus-stats b { font-size: 18px; }
+.focus-cam { position: relative; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: #22364E; }
+.focus-cam video, .focus-cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.focus-cam p { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(23,44,76,.85); color: #fff; border-radius: 10px; padding: 8px 10px; font-size: 12px; font-weight: 700; text-align: center; }
+.focus-run.bad .focus-cam p { background: rgba(165,107,22,.92); }
+.btn-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-row2 .btn { border: 1px solid var(--line); }
+.fr-title { font-size: 17px; }

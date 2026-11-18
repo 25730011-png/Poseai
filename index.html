@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=70">
+  <link rel="stylesheet" href="css/style.css?v=90">
 </head>
 <body>
 
@@ -45,6 +45,7 @@
       <a href="#measure">체형 측정하기</a>
       <a href="#report">체형 리포트</a>
       <a href="#history">내 기록</a>
+      <a href="#focus">공부 타이머</a>
       <p class="sidebar-group">관리</p>
       <a href="#guide">교정 가이드</a>
       <a href="#guide" data-scroll="hospital">병원 찾기</a>
@@ -89,6 +90,7 @@
 
         <!-- 측정하기 -->
         <div class="home-panel" id="t-measure" role="tabpanel">
+          <a href="#focus" class="tile wide focus-tile"><b>공부 타이머 · 자세 지킴이</b><small>공부하는 동안 목이 나오면 포즈가 알려 줘요</small><span class="pose-buddy mini" data-state="good" aria-hidden="true"></span></a>
           <div class="tile-grid two">
             <a href="#measure" class="tile big">
               <b>체형 측정</b><small>정면·측면 5초씩<br>자동으로 측정해요</small>
@@ -298,6 +300,62 @@
       </div>
     </section>
 
+    <!-- ⑤-2 공부 타이머 (자세 지킴이) -->
+    <section data-page="focus" class="page">
+      <div class="wrap">
+        <div class="page-head">
+          <h1 class="page-title">공부 타이머</h1>
+          <p class="page-sub">공부하는 동안 웹캠이 자세를 지켜봐요. 목이 앞으로 나오면 포즈가 알려 줘요</p>
+        </div>
+
+        <!-- 시작 전 -->
+        <div class="focus-setup" id="focus-setup">
+          <div class="pose-buddy big" id="buddy-preview" data-state="good" aria-hidden="true"></div>
+          <p class="focus-q">몇 분 집중할까요?</p>
+          <div class="segment focus-min" role="radiogroup" aria-label="시간">
+            <button type="button" data-min="25" class="active">25분</button>
+            <button type="button" data-min="50">50분</button>
+            <button type="button" data-min="1">1분 체험</button>
+          </div>
+          <label class="focus-sound"><input type="checkbox" id="focus-sound" checked> 자세 알림 소리 켜기</label>
+          <button type="button" class="btn btn-primary btn-block btn-lg" id="focus-start">타이머 시작</button>
+          <p class="note">노트북 웹캠에 얼굴과 양쪽 어깨가 보이게 앉아 주세요. 시작하면 3초 동안 바른 자세를 기준으로 기억해요.</p>
+        </div>
+
+        <!-- 진행 중 -->
+        <div class="focus-run" id="focus-run" hidden>
+          <div class="focus-top">
+            <div class="focus-ring">
+              <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" class="track"/><circle cx="60" cy="60" r="54" class="bar" id="focus-bar"/></svg>
+              <div><b id="focus-time">25:00</b><span id="focus-state">기준 자세 기억 중</span></div>
+            </div>
+            <div class="pose-buddy" id="buddy" data-state="good" aria-hidden="true"></div>
+          </div>
+          <div class="focus-stats">
+            <div><span>바른 자세</span><b id="focus-good">--%</b></div>
+            <div><span>거북이 경고</span><b id="focus-alerts">0회</b></div>
+            <div><span>최장 유지</span><b id="focus-best">0분</b></div>
+          </div>
+          <div class="focus-cam">
+            <video id="focus-video" autoplay playsinline muted></video>
+            <canvas id="focus-canvas"></canvas>
+            <p id="focus-msg">카메라를 켜는 중이에요</p>
+          </div>
+          <div class="btn-row2">
+            <button type="button" class="btn btn-white" id="focus-recal">기준 다시 잡기</button>
+            <button type="button" class="btn btn-primary" id="focus-stop">그만하기</button>
+          </div>
+        </div>
+
+        <!-- 결과 -->
+        <div class="focus-result" id="focus-result" hidden></div>
+
+        <h2 class="sec-title">지난 공부 기록</h2>
+        <ul class="record-list" id="focus-history"><li class="empty">아직 기록이 없어요</li></ul>
+        <p class="note">웹캠 영상은 저장하지 않아요. 자세 유지율 숫자만 이 브라우저에 저장돼요.</p>
+      </div>
+    </section>
+
     <!-- ⑥ FAQ · AI 코치 -->
     <section data-page="faq" class="page">
       <div class="wrap">
@@ -400,6 +458,6 @@
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=71"></script>
+  <script type="module" src="js/app.js?v=90"></script>
 </body>
 </html>
