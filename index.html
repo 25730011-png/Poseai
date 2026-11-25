@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Poppins:wght@700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=90">
+  <link rel="stylesheet" href="css/style.css?v=96">
 </head>
 <body>
 
@@ -22,6 +22,8 @@
     </a>
     <a href="#login" class="header-login" id="login-link">로그인</a>
   </header>
+
+  <div class="demo-banner" id="demo-banner" hidden>예시 데이터를 보고 있어요 <button type="button" id="demo-off">끄기</button></div>
 
   <!-- 사이드바 (☰ 누르면 왼쪽에서 열림) -->
   <div id="sidebar-dim" class="sidebar-dim" hidden></div>
@@ -51,6 +53,7 @@
       <a href="#guide" data-scroll="hospital">병원 찾기</a>
       <p class="sidebar-group">도움</p>
       <a href="#faq">FAQ · AI 자세 코치</a>
+      <a href="#settings">설정</a>
     </nav>
     <p class="sidebar-foot">의학적 진단이 아닌 참고용 분석이에요.</p>
   </aside>
@@ -60,7 +63,7 @@
     <!-- ① 홈 -->
     <section data-page="home" class="page">
       <div class="hero">
-        <h1>웹캠으로 보는<br>나의 체형</h1>
+        <h1>웹캠으로 보는<br><span class="hl">나의 체형</span></h1>
         <p>재고, 매일 스트레칭하고, 다시 재서 변화를 확인해요</p>
         <div class="hero-btns one">
           <a href="#measure" class="btn btn-sky">측정 시작하기</a>
@@ -90,7 +93,7 @@
 
         <!-- 측정하기 -->
         <div class="home-panel" id="t-measure" role="tabpanel">
-          <a href="#focus" class="tile wide focus-tile"><b>공부 타이머 · 자세 지킴이</b><small>공부하는 동안 목이 나오면 포즈가 알려 줘요</small><span class="pose-buddy mini" data-state="good" aria-hidden="true"></span></a>
+          <a href="#focus" class="tile wide focus-tile"><b>공부 타이머 · 자세 지킴이</b><small>공부하는 동안 목이 나오면 포즈가 알려 줘요</small><img class="focus-art" src="pages/asset/images/study-buddy.svg" alt="" width="104" height="83"></a>
           <div class="tile-grid two">
             <a href="#measure" class="tile big">
               <b>체형 측정</b><small>정면·측면 5초씩<br>자동으로 측정해요</small>
@@ -119,7 +122,7 @@
             <a href="#history" class="tile"><b>변화 그래프</b><small>날짜별 각도 변화</small><i class="ico i-chart tile-ico" aria-hidden="true"></i></a>
             <a href="#login" class="tile" id="home-login-tile"><b>기록 동기화</b><small>로그인하면 어디서든</small><i class="ico i-lock tile-ico" aria-hidden="true"></i></a>
           </div>
-          <p class="note">자세는 하루 만에 바뀌지 않아요. 매일 스트레칭하고 4주마다 재서 비교해 보세요.</p>
+          <p class="note">자세는 하루 만에 바뀌지 않아요. 매일 스트레칭하고 1~2주마다 재서 비교해 보세요.</p>
         </div>
 
         <!-- 맞춤 가이드 -->
@@ -136,6 +139,7 @@
         <!-- 도움말 -->
         <div class="home-panel" id="t-help" role="tabpanel" hidden>
           <a href="#faq" class="tile wide"><b>AI 자세 코치 포즈봇</b><small>자세에 대해 궁금한 걸 물어보세요</small></a>
+          <a href="#settings" class="tile wide"><b>설정</b><small>예시 데이터 · 측정 주기 · 알림 소리 · 기록 관리</small></a>
           <div class="faq-quick">
             <a href="#faq">측정값이 매번 달라요</a>
             <a href="#faq">영상이 저장되나요?</a>
@@ -176,7 +180,7 @@
         </div>
 
         <button id="start-btn" class="btn btn-white btn-block btn-lg">처음부터 다시 측정</button>
-        <p class="note">버튼을 누르지 않아도 정면 → 측면 순서로 자동 측정돼요. 측정은 4주에 한 번, 스트레칭은 매일 하는 걸 추천해요 · 영상은 저장하지 않아요</p>
+        <p class="note">버튼을 누르지 않아도 정면 → 측면 순서로 자동 측정돼요. 측정은 1~2주에 한 번, 스트레칭은 매일 하는 걸 추천해요 · 영상은 저장하지 않아요</p>
       </div>
     </section>
 
@@ -238,6 +242,12 @@
 
         <h2 class="sec-title">스트레칭 달력</h2>
         <section class="cal-card" id="cal" aria-label="스트레칭 달력"></section>
+
+        <div class="list-head">
+          <h2 class="sec-title">공부 중 자세 <em>최근 7일</em></h2>
+          <a href="#focus" class="sec-link">공부 타이머 →</a>
+        </div>
+        <section class="focus-sum" id="focus-sum" aria-label="공부 중 자세 요약"></section>
 
         <div class="list-head">
           <h2 class="sec-title">날짜별 기록</h2>
@@ -310,7 +320,7 @@
 
         <!-- 시작 전 -->
         <div class="focus-setup" id="focus-setup">
-          <div class="pose-buddy big" id="buddy-preview" data-state="good" aria-hidden="true"></div>
+          <img class="focus-hero" src="pages/asset/images/focus-setup.svg" alt="" width="200" height="150">
           <p class="focus-q">몇 분 집중할까요?</p>
           <div class="segment focus-min" role="radiogroup" aria-label="시간">
             <button type="button" data-min="25" class="active">25분</button>
@@ -387,7 +397,64 @@
       </div>
     </section>
 
-    <!-- ⑦ 로그인 -->
+    <!-- ⑦ 설정 -->
+    <section data-page="settings" class="page">
+      <div class="wrap">
+        <div class="page-head">
+          <h1 class="page-title">설정</h1>
+          <p class="page-sub">예시 데이터, 측정 주기, 알림 소리, 기록을 관리해요</p>
+        </div>
+
+        <h2 class="set-group">체험 · 발표</h2>
+        <div class="set-card">
+          <label class="set-row">
+            <span><b>예시 데이터 보기</b><small>4주치 예시 기록으로 그래프·달력·리포트를 채워요. 내 기록은 그대로 두고, 끄면 예시만 사라져요</small></span>
+            <input type="checkbox" class="switch" id="set-demo">
+          </label>
+        </div>
+
+        <h2 class="set-group">측정</h2>
+        <div class="set-card">
+          <div class="set-row col">
+            <span><b>다시 측정 주기</b><small>매일은 스트레칭만 하고, 측정은 이 주기마다 해서 변화를 비교해요</small></span>
+            <div class="segment set-seg" id="set-cycle" role="radiogroup" aria-label="다시 측정 주기">
+              <button type="button" role="radio" data-days="7">1주마다</button>
+              <button type="button" role="radio" data-days="14">2주마다</button>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="set-group">공부 타이머</h2>
+        <div class="set-card">
+          <label class="set-row">
+            <span><b>자세 알림 소리</b><small>목이 앞으로 나오면 소리로 알려 줘요</small></span>
+            <input type="checkbox" class="switch" id="set-sound" checked>
+          </label>
+        </div>
+
+        <h2 class="set-group">계정 · 기록</h2>
+        <div class="set-card">
+          <div class="set-row">
+            <span><b>계정</b><small id="set-account">게스트로 이용 중이에요</small></span>
+            <a href="#login" class="set-btn" id="set-login">로그인</a>
+            <button type="button" class="set-btn" id="set-logout" hidden>로그아웃</button>
+          </div>
+          <div class="set-row">
+            <span><b>기록 지우기</b><small>이 브라우저에 저장된 측정·스트레칭·공부 기록을 지워요 (계정에 저장된 건 그대로)</small></span>
+            <button type="button" class="set-btn danger" id="set-clear">이 브라우저 기록 지우기</button>
+          </div>
+        </div>
+
+        <h2 class="set-group">정보</h2>
+        <div class="set-card set-info">
+          <p><b>PoseAi</b> v1.0 · 정유진 (25730011)</p>
+          <p>웹캠 영상은 저장·전송하지 않고 브라우저 안에서만 처리해요.</p>
+          <p>의학적 진단이 아닌 참고용 분석이에요. 불편함이 계속되면 전문가와 상담해 주세요.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑧ 로그인 -->
     <section data-page="login" class="page auth-page">
       <div class="auth-card">
         <a href="#home" class="logo logo-center" aria-label="PoseAi 홈">
@@ -432,11 +499,11 @@
 
   <!-- AI 코치 떠 있는 버튼 (끌어서 옮길 수 있음) -->
   <button type="button" class="faq-fab" id="faq-fab" aria-label="AI 자세 코치 열기" aria-expanded="false" aria-controls="chat-pop">
-    <img src="pages/asset/images/coach-robot.jpg" alt="" width="56" height="56" draggable="false">
+    <img src="pages/asset/images/coach-bot.png?v=2" alt="" width="56" height="56" draggable="false">
   </button>
   <div class="chat-pop" id="chat-pop" role="dialog" aria-label="AI 자세 코치" hidden>
     <div class="chat-pop-head">
-      <img src="pages/asset/images/coach-robot.jpg" alt="" width="28" height="28">
+      <img src="pages/asset/images/coach-bot.png?v=2" alt="" width="28" height="28">
       <div><b>포즈봇</b><span>AI 자세 코치</span></div>
       <button type="button" class="chat-pop-close" id="chat-pop-close" aria-label="닫기">×</button>
     </div>
@@ -458,6 +525,6 @@
   </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script type="module" src="js/app.js?v=90"></script>
+  <script type="module" src="js/app.js?v=98"></script>
 </body>
 </html>

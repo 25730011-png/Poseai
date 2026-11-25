@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160">
+  <!-- 바른 자세 정렬선 + 체크 -->
+  <line x1="178" y1="62" x2="178" y2="146" stroke="#A9CFA8" stroke-width="4" stroke-linecap="round" stroke-dasharray="0.1 9"/>
+  <circle cx="178" cy="40" r="15" fill="#4FA36B"/>
+  <path d="M170.5 40.5l5 5 9.5-10" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 의자 -->
+  <rect x="150" y="98" width="11" height="44" rx="5.5" fill="#8C9BB0"/>
+  <rect x="152" y="138" width="5" height="18" rx="2" fill="#8C9BB0"/>
+
+  <!-- 몸통 (후드티) -->
+  <path d="M112 86c14-6 30-2 36 14l4 46h-48c-6 0-9-4-8-9l4-32c1-9 5-15 12-19z" fill="#3E7D57"/>
+  <!-- 후드 -->
+  <path d="M117 84c6-5 18-5 24 2 3 4 2 10-3 11-7-6-15-7-22-4-4-2-3-6 1-9z" fill="#2F6B4A"/>
+
+  <!-- 책상 -->
+  <rect x="8" y="132" width="104" height="11" rx="4" fill="#E9BC8E"/>
+  <rect x="8" y="140" width="104" height="5" rx="2.5" fill="#D9A574"/>
+  <!-- 공책 -->
+  <path d="M34 131l4-8h46l-4 8z" fill="#fff" stroke="#C9D8EC" stroke-width="1.5" stroke-linejoin="round"/>
+  <line x1="44" y1="127" x2="72" y2="127" stroke="#C9D8EC" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 팔 -->
+  <path d="M118 100c-6 10-16 18-36 22" fill="none" stroke="#3E7D57" stroke-width="13" stroke-linecap="round"/>
+  <!-- 연필 + 손 -->
+  <line x1="74" y1="123" x2="86" y2="101" stroke="#1E2F55" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="79" cy="121" r="6.5" fill="#FFDCC2"/>
+
+  <!-- 목 -->
+  <rect x="117" y="72" width="11" height="14" rx="4" fill="#FFDCC2"/>
+  <!-- 머리 -->
+  <circle cx="120" cy="58" r="19" fill="#FFDCC2"/>
+  <!-- 머리카락 -->
+  <path d="M103 50c1-13 13-21 26-19 12 2 17 12 15 24-1 7-4 12-8 15-1-6-4-9-8-10 1-4 0-8-3-10-7-3-14-1-22 0z" fill="#1E2F55"/>
+  <!-- 귀 -->
+  <circle cx="128" cy="62" r="4.5" fill="#F7C9A8"/>
+  <!-- 눈, 볼, 입 -->
+  <circle cx="108" cy="60" r="2.4" fill="#1E2F55"/>
+  <circle cx="111" cy="67" r="3.2" fill="#FFB7A8" opacity=".7"/>
+  <path d="M103 69q3 2.5 6 0.5" fill="none" stroke="#1E2F55" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 반짝 표시 -->
+  <g stroke="#E2683A" stroke-width="3" stroke-linecap="round">
+    <line x1="84" y1="50" x2="92" y2="53"/>
+    <line x1="82" y1="60" x2="91" y2="60"/>
+    <line x1="84" y1="70" x2="92" y2="67"/>
+  </g>
+</svg>

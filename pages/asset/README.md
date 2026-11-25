@@ -6,7 +6,7 @@
 asset/
 ├ logo.svg              로고 (SVG, 그대로 asset 바로 아래)
 └ images/               사진·그림(jpg, png)은 전부 여기
-   ├ coach-robot.jpg    FAQ · AI 코치 떠 있는 버튼 "포즈봇"
+   ├ coach-bot.png      FAQ · AI 코치 떠 있는 버튼 "포즈봇" (원형)
    ├ hero-skeleton.png  홈 히어로 배경 자세 골격선 (선만 남기고 투명하게 바꿈)
    ├ measure/           홈 "이 3가지를 측정해요" 그림
    │  ├ neck.jpg        거북목
